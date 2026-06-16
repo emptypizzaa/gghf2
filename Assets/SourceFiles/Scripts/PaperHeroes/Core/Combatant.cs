@@ -59,12 +59,13 @@ namespace PaperHeroes
                     target.TakeDamage(data.attackDamage);
                 }
             }
-            else
+            else if (!BlockedByFriendlyAhead())
             {
-                // 적이 없으면 적 거점 방향으로 전진(1D).
+                // 적이 없고 전방이 막히지 않았으면 적 거점 방향으로 전진(1D).
                 float step = _lane.ForwardDir(faction) * data.moveSpeed * Time.deltaTime;
                 transform.position += new Vector3(step, 0f, 0f);
             }
+            // else: 전방에 아군이 막고 있으면 정지(전선 뒤에서 대기) → 공간적 전선이 형성된다.
         }
 
         /// <summary>사거리 내 가장 가까운 적(유닛·거점 동급). 거점 우선순위 없음.</summary>
@@ -88,6 +89,28 @@ namespace PaperHeroes
                 }
             }
             return best;
+        }
+
+        // 같은 진영 유닛 사이 최소 간격(통과 방지·줄서기). 프로토 캡슐 지름 ~1 기준.
+        private const float BodySpacing = 0.85f;
+
+        /// <summary>전진 방향 앞에 같은 진영 유닛이 BodySpacing 안에 있으면 true → 전진 정지(블로킹).</summary>
+        private bool BlockedByFriendlyAhead()
+        {
+            float myX = transform.position.x;
+            int dir = _lane.ForwardDir(faction);
+
+            var all = Targetables.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var other = all[i] as Combatant; // 거점은 블로킹하지 않음(유닛만)
+                if (other == null || other == this || other.IsDead) continue;
+                if (other.faction != faction) continue;
+
+                float rel = (other.transform.position.x - myX) * dir; // > 0 이면 전방
+                if (rel > 0f && rel < BodySpacing) return true;
+            }
+            return false;
         }
 
         public void TakeDamage(float amount)
