@@ -180,6 +180,13 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
+    "com.yhc509.unity-cli-bridge": {
+      "version": "https://github.com/yhc509/unity-cli-bridge.git?path=/unity-package/com.yhc509.unity-cli-bridge#v0.3.1",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "58319d3a47b7ac0b6be0ba9c637f5348b4ce5cff"
+    },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
       "depth": 0,

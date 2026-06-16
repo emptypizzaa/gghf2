@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.yhc509.unity-cli-bridge": "https://github.com/yhc509/unity-cli-bridge.git?path=/unity-package/com.yhc509.unity-cli-bridge#v0.3.1",
     "com.unity.cinemachine": "3.1.6",
     "com.unity.inputsystem": "1.19.0",
     "com.unity.learn.iet-framework": "5.0.3",
