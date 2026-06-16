@@ -92,6 +92,7 @@ namespace PaperHeroes
                 model.transform.localPosition = Vector3.zero;
                 model.transform.localRotation = Quaternion.identity;
                 FitModel(go.transform, model, data.visualHeight);
+                SharpenTextures(model); // 복셀/픽셀아트 텍스처를 Point 필터로(보간 뭉개짐 방지)
 
                 if (data.walkClip != null || data.idleClip != null || data.attackClip != null)
                 {
@@ -104,6 +105,36 @@ namespace PaperHeroes
             }
 
             return combatant;
+        }
+
+        /// <summary>
+        /// 모델 텍스처를 Point 필터로 설정 — 복셀/픽셀아트(작은 텍스처)가 Bilinear 보간으로
+        /// 뭉개지지 않고 또렷하게 보이도록(눈·나무 방패 등). aniso도 끔.
+        /// </summary>
+        private void SharpenTextures(GameObject model)
+        {
+            var ids = new System.Collections.Generic.List<int>();
+            var renderers = model.GetComponentsInChildren<Renderer>(true);
+            for (int r = 0; r < renderers.Length; r++)
+            {
+                var mats = renderers[r].sharedMaterials;
+                for (int m = 0; m < mats.Length; m++)
+                {
+                    var mat = mats[m];
+                    if (mat == null) continue;
+                    ids.Clear();
+                    mat.GetTexturePropertyNameIDs(ids);
+                    for (int i = 0; i < ids.Count; i++)
+                    {
+                        var tex = mat.GetTexture(ids[i]) as Texture2D;
+                        if (tex != null)
+                        {
+                            tex.filterMode = FilterMode.Point;
+                            tex.anisoLevel = 0;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>모델을 목표 높이로 스케일하고 바닥을 유닛 발(지면)에 맞춘다.</summary>
