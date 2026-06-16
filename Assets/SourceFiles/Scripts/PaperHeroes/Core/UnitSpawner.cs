@@ -32,8 +32,26 @@ namespace PaperHeroes
             var go = GameObject.CreatePrimitive(primitive);
             go.name = $"Unit_{faction}_{data.name}";
 
-            // 자기 거점 바로 앞에서 출발.
-            float startX = lane.SpawnX(faction) + lane.ForwardDir(faction) * 1f;
+            // 자기 거점 바로 앞에서 출발하되, 같은 진영 최후미 유닛이 있으면 그 뒤에 줄세운다(겹침 방지).
+            float dir = lane.ForwardDir(faction);
+            float startX = lane.SpawnX(faction) + dir * 0.5f;
+            const float queueSpacing = 0.9f;
+            bool found = false; float rear = 0f;
+            var all = Targetables.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var c = all[i] as Combatant;
+                if (c == null || c.faction != faction || c.IsDead) continue;
+                float cx = c.transform.position.x;
+                if (!found || cx * dir < rear * dir) { rear = cx; found = true; }
+            }
+            if (found)
+            {
+                float behind = rear - dir * queueSpacing;
+                if (behind * dir < startX * dir) startX = behind; // 최후미가 스폰점보다 앞이면 그 뒤에 배치
+            }
+            // 거점 뒤(플랫폼 밖)로는 넘기지 않음 — 극단적 과소환 시 거점 부근에 모인다.
+            if (startX * dir < lane.SpawnX(faction) * dir) startX = lane.SpawnX(faction);
             go.transform.position = new Vector3(startX, lane.groundY + 1f, lane.laneZ);
 
             // 프로토 색 구분.
