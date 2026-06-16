@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ead94bc23f68049dca793b2207ef345e, type: 3}
+  m_Name: Tank_PaperBox
+  m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitData
+  displayName: "\uC885\uC774\uC0C1\uC790 \uD0F1\uCEE4"
+  prototypeColor: {r: 0.76, g: 0.6, b: 0.42, a: 1}
+  maxHp: 300
+  moveSpeed: 1.5
+  attackDamage: 10
+  attackRange: 1
+  attackInterval: 1
+  cost: 80
+  summonCooldown: 4
+  role: 0
