@@ -18,6 +18,9 @@ namespace PaperHeroes
 
         public MatchState State { get; private set; } = MatchState.Playing;
 
+        /// <summary>매치 종료(승/패) 시 1회 발생. 결과 UI 등이 구독한다.</summary>
+        public event System.Action<MatchState> MatchEnded;
+
         void Start()
         {
             // 명시적 참조가 없으면 씬에서 자동 탐색(브리지/프로토 편의 — 수동 와이어링 없이도 동작).
@@ -54,8 +57,8 @@ namespace PaperHeroes
             if (State != MatchState.Playing) return;
             State = result;
             Debug.Log($"[PaperHeroes] Match ended: {result}");
-            // 프로토: 종료 표시는 일시정지로 대신. M4에서 결과 UI/재시작으로 교체.
-            Time.timeScale = 0f;
+            Time.timeScale = 0f; // 결과 패널 뒤로 일시정지(재시작 시 1로 복구)
+            MatchEnded?.Invoke(result);
         }
     }
 }
