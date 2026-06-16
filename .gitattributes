@@ -1,0 +1,98 @@
+# Unity .gitattributes
+# Normalize line endings (LF in repo) and mark binary asset types so Git
+# never line-ending-converts or text-diffs them.
+
+# Auto-detect text files; store as LF in the repo and check out as LF.
+* text=auto eol=lf
+
+#
+# Unity text-serialized assets — keep LF, treat as text (mergeable)
+#
+*.cs               text diff=csharp
+*.cginc            text
+*.shader           text
+*.compute          text
+*.hlsl             text
+*.uss              text
+*.uxml             text
+*.unity            text
+*.meta             text
+*.prefab           text
+*.mat              text
+*.asset            text
+*.anim             text
+*.controller       text
+*.overrideController text
+*.physicMaterial   text
+*.physicsMaterial2D text
+*.mask             text
+*.brush            text
+*.flare            text
+*.fontsettings     text
+*.guiskin          text
+*.giparams         text
+*.renderTexture    text
+*.spriteatlas      text
+*.terrainlayer     text
+*.mixer            text
+*.shadervariants   text
+*.preset           text
+*.asmdef           text
+*.asmref           text
+*.json             text
+*.txt              text
+*.md               text
+*.xml              text
+*.yml              text
+*.yaml             text
+
+#
+# Binary assets — never diff / merge / convert line endings
+#
+# Images
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.bmp   binary
+*.tga   binary
+*.tif   binary
+*.tiff  binary
+*.psd   binary
+*.exr   binary
+*.hdr   binary
+*.ico   binary
+# 3D models
+*.fbx   binary
+*.obj   binary
+*.blend binary
+*.dae   binary
+*.3ds   binary
+*.dxf   binary
+*.ma    binary
+*.mb    binary
+*.max   binary
+# Audio
+*.wav   binary
+*.mp3   binary
+*.ogg   binary
+*.aif   binary
+*.aiff  binary
+*.flac  binary
+# Video
+*.mp4   binary
+*.mov   binary
+*.webm  binary
+# Fonts
+*.ttf   binary
+*.otf   binary
+# Native libraries / packages / builds
+*.dll   binary
+*.so    binary
+*.dylib binary
+*.a     binary
+*.bytes binary
+*.cubemap binary
+*.unitypackage binary
+*.aab   binary
+*.apk   binary
