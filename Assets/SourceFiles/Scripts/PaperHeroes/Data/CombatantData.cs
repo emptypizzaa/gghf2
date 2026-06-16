@@ -60,5 +60,10 @@ namespace PaperHeroes
 
         [Tooltip("모델 사용 시 목표 높이(유닛/월드). 모델을 이 높이로 자동 스케일.")]
         public float visualHeight = 2.2f;
+
+        [Tooltip("모델 애니메이션 클립(선택). 지정 시 이동/정지/공격 상태에 맞춰 재생.")]
+        public AnimationClip walkClip;
+        public AnimationClip idleClip;
+        public AnimationClip attackClip;
     }
 }

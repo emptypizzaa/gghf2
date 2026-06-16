@@ -81,7 +81,10 @@ namespace PaperHeroes
                 renderer.sharedMaterial = mat;
             }
 
-            // 모델 비주얼(선택): 프리미티브 메쉬를 숨기고 3D 모델을 자식으로 부착(지면 맞춰 자동 스케일).
+            var combatant = go.AddComponent<Combatant>();
+            combatant.Init(data, faction, lane);
+
+            // 모델 비주얼(선택): 프리미티브 메쉬를 숨기고 3D 모델을 자식으로 부착(자동 스케일 + 애니메이션).
             if (data.visualPrefab != null)
             {
                 if (renderer != null) renderer.enabled = false;
@@ -89,10 +92,17 @@ namespace PaperHeroes
                 model.transform.localPosition = Vector3.zero;
                 model.transform.localRotation = Quaternion.identity;
                 FitModel(go.transform, model, data.visualHeight);
+
+                if (data.walkClip != null || data.idleClip != null || data.attackClip != null)
+                {
+                    var anim = model.AddComponent<ModelAnimator>();
+                    anim.combatant = combatant;
+                    anim.walk = data.walkClip;
+                    anim.idle = data.idleClip;
+                    anim.attack = data.attackClip;
+                }
             }
 
-            var combatant = go.AddComponent<Combatant>();
-            combatant.Init(data, faction, lane);
             return combatant;
         }
 

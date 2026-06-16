@@ -22,6 +22,10 @@ namespace PaperHeroes
         public float CurrentHp => _hp;
         public bool IsDead => _hp <= 0f;
 
+        /// <summary>외형 애니메이션용 행동 상태(이동/교전/정지).</summary>
+        public enum ActState { Idle, Moving, Attacking }
+        public ActState Motion { get; private set; } = ActState.Idle;
+
         // IDamageable
         Faction IDamageable.Faction => faction;
         float IDamageable.PositionX => transform.position.x;
@@ -54,6 +58,7 @@ namespace PaperHeroes
                 Combatant patient = FindNeediestAllyInRange();
                 if (patient != null)
                 {
+                    Motion = ActState.Attacking;
                     _attackTimer += Time.deltaTime;
                     if (_attackTimer >= data.attackInterval)
                     {
@@ -69,6 +74,7 @@ namespace PaperHeroes
                 IDamageable target = FindNearestEnemyInRange();
                 if (target != null)
                 {
+                    Motion = ActState.Attacking;
                     _attackTimer += Time.deltaTime;
                     if (_attackTimer >= data.attackInterval)
                     {
@@ -85,8 +91,13 @@ namespace PaperHeroes
             // 행동 대상이 없고 전방이 막히지 않았으면 전진(1D). 막혀 있으면 정지 → 공간적 전선 형성.
             if (!BlockedByFriendlyAhead())
             {
+                Motion = ActState.Moving;
                 float step = _lane.ForwardDir(faction) * data.moveSpeed * Time.deltaTime;
                 transform.position += new Vector3(step, 0f, 0f);
+            }
+            else
+            {
+                Motion = ActState.Idle;
             }
         }
 
