@@ -20,6 +20,14 @@ MonoBehaviour:
   attackRange: 1.2
   attackInterval: 0.55
   isHealer: 0
+  usesProjectile: 0
+  projectileSpeed: 14
+  projectileHitRadius: 0.35
+  projectileMaxLifetime: 3
+  projectileArcHeight: 1.2
+  projectileColor: {r: 1, g: 0.95, b: 0.4, a: 1}
+  visualPrefab: {fileID: -7981514964708312862, guid: cd3f54463ce504be6af94c2392573762, type: 3}
+  visualHeight: 2.4
   cost: 45
   summonCooldown: 2
   role: 1

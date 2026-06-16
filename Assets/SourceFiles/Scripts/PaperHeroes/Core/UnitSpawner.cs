@@ -81,9 +81,40 @@ namespace PaperHeroes
                 renderer.sharedMaterial = mat;
             }
 
+            // 모델 비주얼(선택): 프리미티브 메쉬를 숨기고 3D 모델을 자식으로 부착(지면 맞춰 자동 스케일).
+            if (data.visualPrefab != null)
+            {
+                if (renderer != null) renderer.enabled = false;
+                var model = Instantiate(data.visualPrefab, go.transform);
+                model.transform.localPosition = Vector3.zero;
+                model.transform.localRotation = Quaternion.identity;
+                FitModel(go.transform, model, data.visualHeight);
+            }
+
             var combatant = go.AddComponent<Combatant>();
             combatant.Init(data, faction, lane);
             return combatant;
+        }
+
+        /// <summary>모델을 목표 높이로 스케일하고 바닥을 유닛 발(지면)에 맞춘다.</summary>
+        private void FitModel(Transform root, GameObject model, float targetHeight)
+        {
+            var rends = model.GetComponentsInChildren<Renderer>();
+            if (rends.Length == 0) return;
+
+            Bounds b = rends[0].bounds;
+            for (int i = 1; i < rends.Length; i++) b.Encapsulate(rends[i].bounds);
+            float h = b.size.y;
+            if (h < 1e-4f) return;
+
+            float parentY = Mathf.Max(1e-4f, root.lossyScale.y);
+            model.transform.localScale = Vector3.one * (targetHeight / h / parentY);
+
+            // 스케일 후 바운즈 재측정 → 모델 바닥을 유닛 발(지면)에 정렬.
+            Bounds b2 = rends[0].bounds;
+            for (int i = 1; i < rends.Length; i++) b2.Encapsulate(rends[i].bounds);
+            float footY = root.position.y - root.lossyScale.y;
+            model.transform.position += new Vector3(0f, footY - b2.min.y, 0f);
         }
     }
 }

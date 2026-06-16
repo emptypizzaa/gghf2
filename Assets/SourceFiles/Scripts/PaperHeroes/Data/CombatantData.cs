@@ -53,5 +53,12 @@ namespace PaperHeroes
 
         [Tooltip("발사체 색(검정/미설정이면 prototypeColor로 폴백).")]
         public Color projectileColor = new Color(1f, 0.95f, 0.4f, 1f);
+
+        [Header("비주얼(선택)")]
+        [Tooltip("지정 시 프리미티브 대신 이 3D 모델을 유닛 외형으로 사용(지면에 맞춰 자동 스케일).")]
+        public GameObject visualPrefab;
+
+        [Tooltip("모델 사용 시 목표 높이(유닛/월드). 모델을 이 높이로 자동 스케일.")]
+        public float visualHeight = 2.2f;
     }
 }
