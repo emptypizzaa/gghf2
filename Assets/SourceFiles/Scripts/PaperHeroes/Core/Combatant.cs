@@ -73,7 +73,10 @@ namespace PaperHeroes
                     if (_attackTimer >= data.attackInterval)
                     {
                         _attackTimer = 0f;
-                        target.TakeDamage(data.attackDamage);
+                        if (data.usesProjectile)
+                            Projectile.Spawn(MuzzlePosition(), target, data, faction);
+                        else
+                            target.TakeDamage(data.attackDamage);
                     }
                     return;
                 }
@@ -157,6 +160,16 @@ namespace PaperHeroes
                 if (rel > 0f && rel < BodySpacing) return true;
             }
             return false;
+        }
+
+        /// <summary>발사체 발사 위치 — 몸 위쪽·전방 끝(머즐).</summary>
+        private Vector3 MuzzlePosition()
+        {
+            float dir = _lane != null ? _lane.ForwardDir(faction) : 1f;
+            Vector3 p = transform.position;
+            p.y += transform.localScale.y * 0.5f;
+            p.x += dir * transform.localScale.x * 0.5f;
+            return p;
         }
 
         public void TakeDamage(float amount)
