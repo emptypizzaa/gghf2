@@ -5,10 +5,10 @@ namespace PaperHeroes
 {
     /// <summary>
     /// 거점(아군/적). HP를 가지며 0이 되면 파괴 이벤트를 쏜다 → 승패 판정의 트리거.
-    /// 적 거점은 스스로 공격하지 않고 웨이브를 스폰만 한다(스폰 로직은 M2에서 추가).
-    /// 거점 타격은 M1에서 유닛이 TargetBaseX 도달 시 TakeDamage로 연결된다.
+    /// IDamageable이므로 유닛에게 "또 하나의 타겟"으로 취급된다(전선을 뚫으면 거점을 때린다).
+    /// 적 거점은 스스로 공격하지 않고 WaveSpawner로 적을 스폰만 한다.
     /// </summary>
-    public class BaseController : MonoBehaviour
+    public class BaseController : MonoBehaviour, IDamageable
     {
         [Tooltip("이 거점의 진영")]
         public Faction faction;
@@ -22,10 +22,18 @@ namespace PaperHeroes
         /// <summary>HP가 0이 되어 파괴된 순간 1회 발생.</summary>
         public event Action<BaseController> Destroyed;
 
-        void Awake()
+        // IDamageable
+        Faction IDamageable.Faction => faction;
+        float IDamageable.PositionX => transform.position.x;
+        bool IDamageable.IsDead => IsDestroyed;
+
+        private void Awake()
         {
             CurrentHp = maxHp;
         }
+
+        private void OnEnable() => Targetables.Register(this);
+        private void OnDisable() => Targetables.Unregister(this);
 
         public void TakeDamage(float amount)
         {

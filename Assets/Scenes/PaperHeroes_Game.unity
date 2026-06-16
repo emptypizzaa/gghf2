@@ -754,6 +754,7 @@ GameObject:
   - component: {fileID: 2104235707}
   - component: {fileID: 2104235708}
   - component: {fileID: 2104235709}
+  - component: {fileID: 2104235710}
   m_Layer: 0
   m_Name: MatchManager
   m_TagString: Untagged
@@ -805,6 +806,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitSpawner
   lane: {fileID: 0}
   primitive: 1
+--- !u!114 &2104235710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2104235706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eeb9173ae51f147149d102066c65fad2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.WaveSpawner
+  wave: {fileID: 11400000, guid: 1e712882eeb834b7aa067dcec676fd97, type: 2}
+  faction: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
