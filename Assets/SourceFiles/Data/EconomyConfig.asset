@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db35feb1d739e477b8372057d70b42ab, type: 3}
   m_Name: EconomyConfig
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.EconomyConfig
-  startingMoney: 50
-  moneyPerSecond: 12
-  moneyCap: 300
+  startingMoney: 120
+  moneyPerSecond: 14
+  moneyCap: 400

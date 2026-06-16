@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitData
   displayName: "\uC885\uC774\uC0C1\uC790 \uD0F1\uCEE4"
   prototypeColor: {r: 0.76, g: 0.6, b: 0.42, a: 1}
-  maxHp: 300
-  moveSpeed: 1.5
-  attackDamage: 10
-  attackRange: 1
+  maxHp: 450
+  moveSpeed: 1.3
+  attackDamage: 9
+  attackRange: 1.1
   attackInterval: 1
-  cost: 80
-  summonCooldown: 4
+  cost: 90
+  summonCooldown: 6
   role: 0

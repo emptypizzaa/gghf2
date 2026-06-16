@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.EnemyData
   displayName: "\uC878\uAC1C"
   prototypeColor: {r: 0.6, g: 0.4, b: 0.75, a: 1}
-  maxHp: 200
-  moveSpeed: 2
-  attackDamage: 15
+  maxHp: 170
+  moveSpeed: 1.7
+  attackDamage: 14
   attackRange: 1
   attackInterval: 1
   isBoss: 0

@@ -14,14 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.WaveData
   entries:
   - enemy: {fileID: 11400000, guid: 3692fabbf65e34cafaf09ec1a37bbc92, type: 2}
-    spawnTime: 0.5
+    spawnTime: 2
     count: 3
-    interval: 1
+    interval: 1.5
   - enemy: {fileID: 11400000, guid: 3692fabbf65e34cafaf09ec1a37bbc92, type: 2}
-    spawnTime: 5
-    count: 2
-    interval: 1
-  - enemy: {fileID: 11400000, guid: 14cc1cb7393994b279a54e2f54880441, type: 2}
     spawnTime: 9
+    count: 3
+    interval: 1.3
+  - enemy: {fileID: 11400000, guid: 3692fabbf65e34cafaf09ec1a37bbc92, type: 2}
+    spawnTime: 17
+    count: 4
+    interval: 1.1
+  - enemy: {fileID: 11400000, guid: 14cc1cb7393994b279a54e2f54880441, type: 2}
+    spawnTime: 26
     count: 1
     interval: 0.5
+  - enemy: {fileID: 11400000, guid: 3692fabbf65e34cafaf09ec1a37bbc92, type: 2}
+    spawnTime: 28
+    count: 3
+    interval: 1.2
