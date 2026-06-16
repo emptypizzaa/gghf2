@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ead94bc23f68049dca793b2207ef345e, type: 3}
+  m_Name: Healer_PaperStaff
+  m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitData
+  displayName: "\uC885\uC774\uC9C0\uD321\uC774 \uD790\uB7EC"
+  prototypeColor: {r: 0.4, g: 0.9, b: 0.95, a: 1}
+  maxHp: 50
+  moveSpeed: 2.5
+  attackDamage: 18
+  attackRange: 3
+  attackInterval: 1
+  isHealer: 1
+  cost: 70
+  summonCooldown: 6
+  role: 3

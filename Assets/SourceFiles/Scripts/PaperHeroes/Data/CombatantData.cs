@@ -30,5 +30,9 @@ namespace PaperHeroes
 
         [Tooltip("공격 간격(초)")]
         public float attackInterval = 1f;
+
+        [Header("행동")]
+        [Tooltip("true면 적을 때리는 대신 사거리 내 가장 다친 아군을 회복한다(attackDamage=회복량, attackRange=회복 사거리).")]
+        public bool isHealer = false;
     }
 }

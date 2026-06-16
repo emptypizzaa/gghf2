@@ -48,24 +48,43 @@ namespace PaperHeroes
         {
             if (data == null || _lane == null) return;
 
-            IDamageable target = FindNearestEnemyInRange();
-            if (target != null)
+            if (data.isHealer)
             {
-                // 사거리 안 적 → 공격.
-                _attackTimer += Time.deltaTime;
-                if (_attackTimer >= data.attackInterval)
+                // 힐러: 사거리 내 가장 다친 아군 회복.
+                Combatant patient = FindNeediestAllyInRange();
+                if (patient != null)
                 {
-                    _attackTimer = 0f;
-                    target.TakeDamage(data.attackDamage);
+                    _attackTimer += Time.deltaTime;
+                    if (_attackTimer >= data.attackInterval)
+                    {
+                        _attackTimer = 0f;
+                        patient.Heal(data.attackDamage);
+                    }
+                    return;
                 }
             }
-            else if (!BlockedByFriendlyAhead())
+            else
             {
-                // 적이 없고 전방이 막히지 않았으면 적 거점 방향으로 전진(1D).
+                // 공격수: 사거리 내 적 공격.
+                IDamageable target = FindNearestEnemyInRange();
+                if (target != null)
+                {
+                    _attackTimer += Time.deltaTime;
+                    if (_attackTimer >= data.attackInterval)
+                    {
+                        _attackTimer = 0f;
+                        target.TakeDamage(data.attackDamage);
+                    }
+                    return;
+                }
+            }
+
+            // 행동 대상이 없고 전방이 막히지 않았으면 전진(1D). 막혀 있으면 정지 → 공간적 전선 형성.
+            if (!BlockedByFriendlyAhead())
+            {
                 float step = _lane.ForwardDir(faction) * data.moveSpeed * Time.deltaTime;
                 transform.position += new Vector3(step, 0f, 0f);
             }
-            // else: 전방에 아군이 막고 있으면 정지(전선 뒤에서 대기) → 공간적 전선이 형성된다.
         }
 
         /// <summary>사거리 내 가장 가까운 적(유닛·거점 동급). 거점 우선순위 없음.</summary>
@@ -86,6 +105,33 @@ namespace PaperHeroes
                 {
                     bestDist = d;
                     best = t;
+                }
+            }
+            return best;
+        }
+
+        /// <summary>사거리 내, HP가 가득 차지 않은 아군 중 가장 다친(HP 비율 최저) 유닛.</summary>
+        private Combatant FindNeediestAllyInRange()
+        {
+            float myX = transform.position.x;
+            Combatant best = null;
+            float bestRatio = 1f;
+
+            var all = Targetables.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var other = all[i] as Combatant;
+                if (other == null || other == this || other.IsDead) continue;
+                if (other.faction != faction || other.data == null || other.data.maxHp <= 0f) continue;
+
+                float ratio = other.CurrentHp / other.data.maxHp;
+                if (ratio >= 1f) continue; // 가득 찬 아군은 제외
+
+                float d = Mathf.Abs(other.transform.position.x - myX);
+                if (d <= data.attackRange && ratio < bestRatio)
+                {
+                    bestRatio = ratio;
+                    best = other;
                 }
             }
             return best;
@@ -118,6 +164,12 @@ namespace PaperHeroes
             if (amount <= 0f || IsDead) return;
             _hp -= amount;
             if (_hp <= 0f) Destroy(gameObject);
+        }
+
+        public void Heal(float amount)
+        {
+            if (amount <= 0f || IsDead || data == null) return;
+            _hp = Mathf.Min(data.maxHp, _hp + amount);
         }
     }
 }
