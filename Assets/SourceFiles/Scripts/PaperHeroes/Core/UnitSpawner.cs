@@ -32,10 +32,10 @@ namespace PaperHeroes
             var go = GameObject.CreatePrimitive(primitive);
             go.name = $"Unit_{faction}_{data.name}";
 
-            // 자기 거점 바로 앞에서 출발하되, 같은 진영 최후미 유닛이 있으면 그 뒤에 줄세운다(겹침 방지).
+            // 자기 거점 앞에서 출발. 같은 진영 최후미 유닛 바로 뒤에 가깝게 붙여 군집(겹침)으로 몰려가게 한다.
             float dir = lane.ForwardDir(faction);
             float startX = lane.SpawnX(faction) + dir * 0.5f;
-            const float queueSpacing = 0.9f;
+            const float queueSpacing = 0.25f; // 작게 → 아군이 겹쳐 뭉쳐 행군(냥코식). 0.9는 줄서기처럼 보였음.
             bool found = false; float rear = 0f;
             var all = Targetables.All;
             for (int i = 0; i < all.Count; i++)

@@ -7,8 +7,9 @@ namespace PaperHeroes
     /// 사거리 안에 적(유닛 또는 거점)이 들어오면 멈춰서 주기적으로 공격한다.
     /// 수치는 전부 CombatantData(SO)에서 읽는다(데이터-로직 분리).
     ///
-    /// M2 단순화(의식적 유예): 같은 진영 블로킹이 없어 유닛들이 같은 X에 겹쳐 "스택 교전"한다.
-    /// 진짜 공간적 전선(밀당)은 추후 블로킹 도입 시 구현.
+    /// 같은 진영 블로킹 없음(사용자 요청 2026-06): 아군끼리 서로 겹쳐 지나갈 수 있고,
+    /// 적 사거리에 닿으면 멈춰 전선에 스택 교전한다(냥코 대전쟁식). 줄서기를 유발하던
+    /// BlockedByFriendlyAhead 로직은 제거됨. 유닛엔 Rigidbody가 없어 콜라이더는 서로 막지 않는다.
     /// </summary>
     public class Combatant : MonoBehaviour, IDamageable
     {
@@ -88,17 +89,10 @@ namespace PaperHeroes
                 }
             }
 
-            // 행동 대상이 없고 전방이 막히지 않았으면 전진(1D). 막혀 있으면 정지 → 공간적 전선 형성.
-            if (!BlockedByFriendlyAhead())
-            {
-                Motion = ActState.Moving;
-                float step = _lane.ForwardDir(faction) * data.moveSpeed * Time.deltaTime;
-                transform.position += new Vector3(step, 0f, 0f);
-            }
-            else
-            {
-                Motion = ActState.Idle;
-            }
+            // 행동 대상이 없으면 전진(1D). 아군끼리는 막지 않아 서로 겹쳐 지나갈 수 있다(줄서기 제거).
+            Motion = ActState.Moving;
+            float step = _lane.ForwardDir(faction) * data.moveSpeed * Time.deltaTime;
+            transform.position += new Vector3(step, 0f, 0f);
         }
 
         /// <summary>사거리 내 가장 가까운 적(유닛·거점 동급). 거점 우선순위 없음.</summary>
@@ -149,28 +143,6 @@ namespace PaperHeroes
                 }
             }
             return best;
-        }
-
-        // 같은 진영 유닛 사이 최소 간격(통과 방지·줄서기). 프로토 캡슐 지름 ~1 기준.
-        private const float BodySpacing = 0.85f;
-
-        /// <summary>전진 방향 앞에 같은 진영 유닛이 BodySpacing 안에 있으면 true → 전진 정지(블로킹).</summary>
-        private bool BlockedByFriendlyAhead()
-        {
-            float myX = transform.position.x;
-            int dir = _lane.ForwardDir(faction);
-
-            var all = Targetables.All;
-            for (int i = 0; i < all.Count; i++)
-            {
-                var other = all[i] as Combatant; // 거점은 블로킹하지 않음(유닛만)
-                if (other == null || other == this || other.IsDead) continue;
-                if (other.faction != faction) continue;
-
-                float rel = (other.transform.position.x - myX) * dir; // > 0 이면 전방
-                if (rel > 0f && rel < BodySpacing) return true;
-            }
-            return false;
         }
 
         /// <summary>발사체 발사 위치 — 몸 위쪽·전방 끝(머즐).</summary>
