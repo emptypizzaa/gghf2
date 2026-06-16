@@ -35,7 +35,7 @@ namespace PaperHeroes
             // 자기 거점 앞에서 출발. 같은 진영 최후미 유닛 바로 뒤에 가깝게 붙여 군집(겹침)으로 몰려가게 한다.
             float dir = lane.ForwardDir(faction);
             float startX = lane.SpawnX(faction) + dir * 0.5f;
-            const float queueSpacing = 0.25f; // 작게 → 아군이 겹쳐 뭉쳐 행군(냥코식). 0.9는 줄서기처럼 보였음.
+            const float queueSpacing = 0.4f; // 아군이 겹쳐 뭉쳐 행군(냥코식)하되 적당히. (0.9=줄서기, 0.25=과밀)
             bool found = false; float rear = 0f;
             var all = Targetables.All;
             for (int i = 0; i < all.Count; i++)
