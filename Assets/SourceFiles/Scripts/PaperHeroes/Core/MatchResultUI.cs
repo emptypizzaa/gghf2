@@ -60,7 +60,7 @@ namespace PaperHeroes
             drt.offsetMin = drt.offsetMax = Vector2.zero;
 
             // 결과 텍스트
-            var txt = CreateText(canvasGo.transform, won ? "VICTORY" : "DEFEAT", 120f);
+            var txt = CreateText(canvasGo.transform, won ? "승리" : "패배", 120f);
             txt.color = won ? new Color(0.45f, 1f, 0.55f) : new Color(1f, 0.45f, 0.45f);
             var trt = txt.rectTransform;
             trt.anchorMin = trt.anchorMax = trt.pivot = new Vector2(0.5f, 0.5f);
@@ -79,7 +79,7 @@ namespace PaperHeroes
             var btn = btnGo.AddComponent<Button>();
             btn.targetGraphic = img;
             btn.onClick.AddListener(Restart);
-            var label = CreateText(btnGo.transform, "RESTART", 46f);
+            var label = CreateText(btnGo.transform, "다시 시작", 46f);
             var lrt = label.rectTransform;
             lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
             lrt.offsetMin = lrt.offsetMax = Vector2.zero;

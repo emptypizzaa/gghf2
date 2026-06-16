@@ -110,9 +110,8 @@ namespace PaperHeroes
 
         private void RefreshUI()
         {
-            // 프로토 UI는 ASCII로 표기(기본 TMP 폰트에 한글 글리프 없음 → 한글 폰트는 추후 폴리시).
             if (_moneyText != null && economy != null)
-                _moneyText.text = "Gold  " + Mathf.FloorToInt(economy.CurrentMoney);
+                _moneyText.text = "돈  " + Mathf.FloorToInt(economy.CurrentMoney);
 
             if (_buttons == null) return;
             for (int i = 0; i < _buttons.Length; i++)
@@ -120,9 +119,9 @@ namespace PaperHeroes
                 UnitData d = roster[i];
                 _buttons[i].interactable = CanSummon(i);
                 string cd = _cooldownRemaining[i] > 0f
-                    ? "\nCD " + _cooldownRemaining[i].ToString("F1") + "s"
+                    ? "\n쿨 " + _cooldownRemaining[i].ToString("F1") + "s"
                     : "";
-                _labels[i].text = (d != null ? d.role.ToString() : "-") + "\n$" + (d != null ? (int)d.cost : 0) + cd;
+                _labels[i].text = (d != null ? d.displayName : "-") + "\n$" + (d != null ? (int)d.cost : 0) + cd;
             }
         }
 
