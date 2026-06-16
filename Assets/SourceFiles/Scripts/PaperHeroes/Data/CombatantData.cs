@@ -61,6 +61,9 @@ namespace PaperHeroes
         [Tooltip("모델 사용 시 목표 높이(유닛/월드). 모델을 이 높이로 자동 스케일.")]
         public float visualHeight = 2.2f;
 
+        [Tooltip("모델 정면 보정(Y도). 모델 기본 정면이 Unity 표준(+Z)과 다를 때. 행군 방향을 바라보게 회전한 뒤 이 각도를 더한다. 예: 정면이 -Z인 모델은 180.")]
+        public float modelYawOffset = 0f;
+
         [Tooltip("모델 애니메이션 클립(선택). 지정 시 이동/정지/공격 상태에 맞춰 재생.")]
         public AnimationClip walkClip;
         public AnimationClip idleClip;

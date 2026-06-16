@@ -90,7 +90,9 @@ namespace PaperHeroes
                 if (renderer != null) renderer.enabled = false;
                 var model = Instantiate(data.visualPrefab, go.transform);
                 model.transform.localPosition = Vector3.zero;
-                model.transform.localRotation = Quaternion.identity;
+                // 행군 방향(아군=적진 +X / 적=아군 -X)을 바라보게. modelYawOffset로 모델 기본 정면 보정.
+                var march = new Vector3(lane.ForwardDir(faction), 0f, 0f);
+                model.transform.rotation = Quaternion.LookRotation(march, Vector3.up) * Quaternion.Euler(0f, data.modelYawOffset, 0f);
                 FitModel(go.transform, model, data.visualHeight);
                 SharpenTextures(model); // 복셀/픽셀아트 텍스처를 Point 필터로(보간 뭉개짐 방지)
 
