@@ -52,7 +52,25 @@ namespace PaperHeroes
             }
             // 거점 뒤(플랫폼 밖)로는 넘기지 않음 — 극단적 과소환 시 거점 부근에 모인다.
             if (startX * dir < lane.SpawnX(faction) * dir) startX = lane.SpawnX(faction);
-            go.transform.position = new Vector3(startX, lane.groundY + 1f, lane.laneZ);
+
+            // 역할별 실루엣 차별화(P0): 복셀 교체 전까지 스케일로 포지션을 구분.
+            Vector3 scale = Vector3.one;
+            var ud = data as UnitData;
+            if (ud != null)
+            {
+                switch (ud.role)
+                {
+                    case UnitRole.Tank:   scale = new Vector3(1.3f, 1.15f, 1.3f); break;
+                    case UnitRole.Ranged: scale = new Vector3(0.72f, 1.18f, 0.72f); break;
+                    case UnitRole.Healer: scale = new Vector3(0.8f, 0.9f, 0.8f); break;
+                }
+            }
+            else if (data is EnemyData ed && ed.isBoss)
+            {
+                scale = new Vector3(1.45f, 1.45f, 1.45f);
+            }
+            go.transform.localScale = scale;
+            go.transform.position = new Vector3(startX, lane.groundY + scale.y, lane.laneZ);
 
             // 프로토 색 구분.
             var renderer = go.GetComponent<Renderer>();

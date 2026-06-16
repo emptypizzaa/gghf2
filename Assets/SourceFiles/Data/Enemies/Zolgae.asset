@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: Zolgae
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.EnemyData
   displayName: "\uC878\uAC1C"
-  prototypeColor: {r: 0.6, g: 0.4, b: 0.75, a: 1}
+  prototypeColor: {r: 0.9, g: 0.3, b: 0.3, a: 1}
   maxHp: 170
   moveSpeed: 1.7
   attackDamage: 14
   attackRange: 1
   attackInterval: 1
+  isHealer: 0
   isBoss: 0

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Healer_PaperStaff
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitData
   displayName: "\uC885\uC774\uC9C0\uD321\uC774 \uD790\uB7EC"
-  prototypeColor: {r: 0.4, g: 0.9, b: 0.95, a: 1}
+  prototypeColor: {r: 1, g: 0.6, b: 0.2, a: 1}
   maxHp: 50
   moveSpeed: 2.5
   attackDamage: 18

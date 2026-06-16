@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: Melee_PaperKnife
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitData
   displayName: "\uC885\uC774\uCE7C \uADFC\uC811\uB51C\uB7EC"
-  prototypeColor: {r: 1, g: 0.8, b: 0.2, a: 1}
+  prototypeColor: {r: 0.35, g: 0.85, b: 0.45, a: 1}
   maxHp: 80
   moveSpeed: 3
   attackDamage: 22
   attackRange: 1.2
   attackInterval: 0.55
+  isHealer: 0
   cost: 45
   summonCooldown: 2
   role: 1

@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: Ranged_PaperBow
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitData
   displayName: "\uC885\uC774\uD65C \uC6D0\uAC70\uB9AC"
-  prototypeColor: {r: 0.4, g: 0.8, b: 0.45, a: 1}
+  prototypeColor: {r: 1, g: 0.85, b: 0.25, a: 1}
   maxHp: 40
   moveSpeed: 2.2
   attackDamage: 28
   attackRange: 5
   attackInterval: 0.9
+  isHealer: 0
   cost: 100
   summonCooldown: 5
   role: 2
