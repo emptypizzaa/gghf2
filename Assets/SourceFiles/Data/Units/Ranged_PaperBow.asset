@@ -21,10 +21,10 @@ MonoBehaviour:
   attackInterval: 0.9
   isHealer: 0
   usesProjectile: 1
-  projectileSpeed: 9
+  projectileSpeed: 24
   projectileHitRadius: 0.4
   projectileMaxLifetime: 3
-  projectileArcHeight: 1.6
+  projectileArcHeight: 0
   projectileColor: {r: 1, g: 0.9, b: 0.35, a: 1}
   cost: 100
   summonCooldown: 5
