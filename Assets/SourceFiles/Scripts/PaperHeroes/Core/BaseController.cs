@@ -13,7 +13,7 @@ namespace PaperHeroes
         [Tooltip("이 거점의 진영")]
         public Faction faction;
 
-        [Tooltip("거점 최대 체력 (※ 스테이지 수치 — 추후 StageData SO로 이전 예정)")]
+        [Tooltip("거점 최대 체력. 기본값(폴백) — 매치 시작 시 StageData.allyBaseHp/enemyBaseHp가 ConfigureHp로 주입한다.")]
         public float maxHp = 1000f;
 
         public float CurrentHp { get; private set; }
@@ -30,6 +30,14 @@ namespace PaperHeroes
         private void Awake()
         {
             CurrentHp = maxHp;
+        }
+
+        /// <summary>StageData에서 거점 HP를 주입(매치 시작 시 MatchManager가 호출). maxHp·CurrentHp를 함께 설정해 Awake 실행 순서와 무관하게 안전하다.</summary>
+        public void ConfigureHp(float hp)
+        {
+            if (hp <= 0f) return;
+            maxHp = hp;
+            CurrentHp = hp;
         }
 
         private void OnEnable() => Targetables.Register(this);

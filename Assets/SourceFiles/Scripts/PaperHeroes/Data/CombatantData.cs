@@ -7,8 +7,18 @@ namespace PaperHeroes
     /// 1라인 디펜스라 전투는 X축 1D로 처리되며, s거리/공격은 양 진영이 동일한 규칙을 쓴다.
     /// 데이터-로직 분리 원칙: 수치는 전부 여기(ScriptableObject)에 두고 MonoBehaviour는 읽기만 한다.
     /// </summary>
+    /// <summary>용병 등급(워드 용병 테이블 '등급'). 프로토 미사용 — UI/조합 라벨 스텁.</summary>
+    public enum UnitGrade { Common, Rare, Epic, Legendary }
+
     public abstract class CombatantData : ScriptableObject
     {
+        [Header("식별/테이블")]
+        [Tooltip("테이블 키(고유 ID). 미설정 시 에셋 파일명으로 식별.")]
+        public string id;
+
+        [Tooltip("등급(프로토 스텁, 전투 미반영).")]
+        public UnitGrade grade = UnitGrade.Common;
+
         [Header("표시")]
         public string displayName;
 
@@ -30,6 +40,19 @@ namespace PaperHeroes
 
         [Tooltip("공격 간격(초)")]
         public float attackInterval = 1f;
+
+        [Tooltip("방어력. 피격 시 감산 경감 max(1, 데미지-방어력). 0=경감 없음. (M2에서 TakeDamage에 적용)")]
+        public float defense = 0f;
+
+        [Header("테이블 메타(프로토 스텁 — 성장/스킬 보류)")]
+        [Tooltip("레벨업당 공격력 증가량(성장=프로토 OUT, 스키마만).")]
+        public float atkPerLevel = 0f;
+
+        [Tooltip("레벨업당 체력 증가량(성장=프로토 OUT, 스키마만).")]
+        public float hpPerLevel = 0f;
+
+        [Tooltip("스킬 식별자(SkillData.skillId 참조 키). 프로토 미사용 스텁.")]
+        public string skillId;
 
         [Header("행동")]
         [Tooltip("true면 적을 때리는 대신 사거리 내 가장 다친 아군을 회복한다(attackDamage=회복량, attackRange=회복 사거리).")]

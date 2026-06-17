@@ -24,5 +24,8 @@ namespace PaperHeroes
 
         [Tooltip("포지션(분류/UI용). 실제 행동은 전투 수치로 결정된다.")]
         public UnitRole role = UnitRole.Melee;
+
+        [Tooltip("판매 환급률(0~1). 판매=프로토 OUT, 스키마만(워드 용병 테이블 '판매환급률').")]
+        [Range(0f, 1f)] public float sellRefundRate = 0.5f;
     }
 }

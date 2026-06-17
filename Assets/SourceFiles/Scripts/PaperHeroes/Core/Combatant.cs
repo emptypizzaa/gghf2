@@ -7,9 +7,9 @@ namespace PaperHeroes
     /// 사거리 안에 적(유닛 또는 거점)이 들어오면 멈춰서 주기적으로 공격한다.
     /// 수치는 전부 CombatantData(SO)에서 읽는다(데이터-로직 분리).
     ///
-    /// 같은 진영 블로킹 없음(사용자 요청 2026-06): 아군끼리 서로 겹쳐 지나갈 수 있고,
-    /// 적 사거리에 닿으면 멈춰 전선에 스택 교전한다(냥코 대전쟁식). 줄서기를 유발하던
-    /// BlockedByFriendlyAhead 로직은 제거됨. 유닛엔 Rigidbody가 없어 콜라이더는 서로 막지 않는다.
+    /// 이동(2026-06-17 확정): **아군 = 냥코식 자유 행군** — 자기 moveSpeed로 적 거점 향해 전진,
+    /// 서로 통과·겹침 허용(블로킹 없음, 추월 가능). **적 = 줄 유지** — 먼저 스폰된 앞 유닛을
+    /// 추월하지 않고 footprint 간격으로 따라감(TryLeaderCapX, 적 전용). 물리(Rigidbody) 없음.
     /// </summary>
     public class Combatant : MonoBehaviour, IDamageable
     {
@@ -19,6 +19,20 @@ namespace PaperHeroes
         private Lane _lane;
         private float _hp;
         private float _attackTimer;
+
+        // 스폰 순번 = 줄 순서. 먼저 소환될수록 작고(앞), 늦을수록 큼(뒤). Init에서 1회 할당. 승급해도 유지(자기 자리 보존).
+        private static int _spawnCounter;
+        public int SpawnSeq { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetSpawnCounter() => _spawnCounter = 0;
+
+        // 겹침 회피 부채꼴 연출(시각 전용 Z 분리) 설정. Resources/FanConfig에서 읽음(없으면 폴백 기본값).
+        private static FanConfig _fanConfig;
+        private static FanConfig Fan
+        {
+            get { if (_fanConfig == null) _fanConfig = Resources.Load<FanConfig>("FanConfig"); return _fanConfig; }
+        }
 
         public float CurrentHp => _hp;
         public bool IsDead => _hp <= 0f;
@@ -31,6 +45,9 @@ namespace PaperHeroes
         Faction IDamageable.Faction => faction;
         float IDamageable.PositionX => transform.position.x;
 
+        /// <summary>유닛 footprint 반폭(캡슐 폭 = localScale.x). UnitSpawner가 role/보스별 스케일을 세팅하므로 단일 진실원천.</summary>
+        public static float HalfWidth(Combatant c) => 0.5f * Mathf.Max(0.0001f, c.transform.localScale.x);
+
         /// <summary>스폰 시 스포너가 호출. 데이터/진영/라인을 주입한다.</summary>
         public void Init(CombatantData data, Faction faction, Lane lane)
         {
@@ -38,6 +55,7 @@ namespace PaperHeroes
             this.faction = faction;
             _lane = lane;
             if (data != null) _hp = data.maxHp;
+            SpawnSeq = _spawnCounter++;
         }
 
         private void OnEnable() => Targetables.Register(this);
@@ -53,9 +71,11 @@ namespace PaperHeroes
         {
             if (data == null || _lane == null) return;
 
+            ApplyFanSeparation(); // 겹침 회피 Z 분리(시각 전용 — X/전투/타게팅 불변). 공격·이동과 무관하게 매 프레임.
+
             if (data.isHealer)
             {
-                // 힐러: 사거리 내 가장 다친 아군 회복.
+                // 힐러: 사거리 내 가장 다친 아군이 있으면 정지·회복.
                 Combatant patient = FindNeediestAllyInRange();
                 if (patient != null)
                 {
@@ -71,7 +91,7 @@ namespace PaperHeroes
             }
             else
             {
-                // 공격수: 사거리 내 적 공격.
+                // 공격수: 사거리 내 적이 있으면 정지·공격.
                 IDamageable target = FindNearestEnemyInRange();
                 if (target != null)
                 {
@@ -89,10 +109,81 @@ namespace PaperHeroes
                 }
             }
 
-            // 행동 대상이 없으면 전진(1D). 아군끼리는 막지 않아 서로 겹쳐 지나갈 수 있다(줄서기 제거).
+            // 행동 대상이 없으면 적 거점 방향으로 전진.
+            // 아군 = 자유 행군(통과·겹침·추월 허용, 캡 없음). 적 = 줄 유지(앞 유닛 추월 금지).
             Motion = ActState.Moving;
-            float step = _lane.ForwardDir(faction) * data.moveSpeed * Time.deltaTime;
-            transform.position += new Vector3(step, 0f, 0f);
+            float dir = _lane.ForwardDir(faction);
+            float curX = transform.position.x;
+            float newX = curX + dir * data.moveSpeed * Time.deltaTime;
+            if (faction == Faction.Enemy)
+            {
+                if (TryLeaderCapX(dir, out float capX) && newX * dir > capX * dir)
+                    newX = capX;                          // 앞 유닛 뒤 한계로 캡(추월 금지)
+                if (newX * dir < curX * dir) newX = curX; // 후퇴 금지(한계가 현 위치보다 뒤면 정지)
+            }
+            transform.position = new Vector3(newX, transform.position.y, transform.position.z);
+            if (Mathf.Approximately(newX, curX)) Motion = ActState.Idle; // 캡으로 제자리면(적 줄 대기) 걷기 애니 방지
+        }
+
+        /// <summary>
+        /// (적 전용 — 줄 유지) 내 바로 앞 유닛(= 나보다 먼저 스폰된 SpawnSeq 중 최대) 뒤 spacing 지점을 전진 한계 X로 돌려준다.
+        /// 앞 유닛이 죽으면 그 다음으로 먼저 스폰된 생존 유닛이 새 리더가 된다. 내가 선두(앞에 아무도 없음)면 false.
+        /// spacing = 두 유닛 footprint 반폭 합 → 겹침 없이 따라붙는다. (아군은 자유 행군이라 호출하지 않음.)
+        /// </summary>
+        private bool TryLeaderCapX(float dir, out float capX)
+        {
+            capX = 0f;
+            Combatant leader = null;
+            var all = Targetables.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var c = all[i] as Combatant;
+                if (c == null || c == this || c.IsDead || c.faction != faction) continue;
+                if (c.SpawnSeq >= SpawnSeq) continue;                          // 나보다 먼저 스폰된(앞) 유닛만
+                if (leader == null || c.SpawnSeq > leader.SpawnSeq) leader = c; // 바로 앞(SpawnSeq 최대)
+            }
+            if (leader == null) return false;
+            float spacing = HalfWidth(this) + HalfWidth(leader); // footprint(겹침 없음)
+            capX = leader.transform.position.x - dir * spacing;
+            return true;
+        }
+
+        /// <summary>
+        /// 겹침 회피 "부채꼴" 연출: 같은 진영 유닛 중 XZ로 가까운(겹치는) 유닛에게서 Z로 밀어낸다.
+        /// **transform.x(전투 위치)는 절대 안 건드림** → 타게팅/사거리/이동 게임플레이 0 변화. Z만 조정해 시각적으로 펼침.
+        /// overlapRadius 밖이면 힘 0(deadzone) → 떨림 없음. 같은 Z 동률은 SpawnSeq 순서로 결정적 분리. laneZ±zBand로 클램프. 아군/적 공용.
+        /// </summary>
+        private void ApplyFanSeparation()
+        {
+            var cfg = Fan;
+            float overlapR = cfg != null ? cfg.overlapRadius : 0.8f;
+            float strength = cfg != null ? cfg.zSeparationStrength : 3f;
+            float zBand = cfg != null ? cfg.zBand : 1.8f;
+            if (overlapR <= 0f || strength <= 0f) return;
+
+            float myX = transform.position.x;
+            float myZ = transform.position.z;
+            float push = 0f;
+            var all = Targetables.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var c = all[i] as Combatant;
+                if (c == null || c == this || c.IsDead || c.faction != faction) continue;
+                float dx = c.transform.position.x - myX;
+                if (Mathf.Abs(dx) > overlapR) continue;                 // X로 충분히 떨어졌으면 겹침 아님(sqrt 전 조기 컷)
+                float dz = myZ - c.transform.position.z;
+                float dist = Mathf.Sqrt(dx * dx + dz * dz);
+                if (dist > overlapR) continue;                          // XZ deadzone — 안 겹치면 밀지 않음(떨림 방지)
+                float pushDir = Mathf.Abs(dz) > 1e-4f ? Mathf.Sign(dz)
+                              : (SpawnSeq < c.SpawnSeq ? -1f : 1f);     // 같은 Z: SpawnSeq 순서로 결정적 분리
+                push += pushDir * (overlapR - dist) / overlapR;         // 가까울수록 강하게
+            }
+            if (push == 0f) return;
+
+            float newZ = myZ + push * strength * Time.deltaTime;
+            float laneZ = _lane.laneZ;
+            newZ = Mathf.Clamp(newZ, laneZ - zBand, laneZ + zBand);
+            transform.position = new Vector3(myX, transform.position.y, newZ); // X·Y 불변, Z만 조정
         }
 
         /// <summary>사거리 내 가장 가까운 적(유닛·거점 동급). 거점 우선순위 없음.</summary>

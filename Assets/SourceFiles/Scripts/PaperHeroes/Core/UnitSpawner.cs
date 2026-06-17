@@ -14,6 +14,9 @@ namespace PaperHeroes
         [Tooltip("프로토 유닛 메쉬 형태")]
         public PrimitiveType primitive = PrimitiveType.Capsule;
 
+        [Tooltip("스폰 시 Z 지터(±). 겹치는 유닛을 시각적으로 부채꼴로 펼친다 — 전투/타게팅은 X축만 쓰므로 게임플레이 영향 0. 0=옛 1라인 정렬.")]
+        [SerializeField] private float zJitter = 0.4f;
+
         private void Awake()
         {
             if (lane == null) lane = FindFirstObjectByType<Lane>();
@@ -32,26 +35,9 @@ namespace PaperHeroes
             var go = GameObject.CreatePrimitive(primitive);
             go.name = $"Unit_{faction}_{data.name}";
 
-            // 자기 거점 앞에서 출발. 같은 진영 최후미 유닛 바로 뒤에 가깝게 붙여 군집(겹침)으로 몰려가게 한다.
+            // 스폰은 자기 거점 앞. 아래에서 같은 진영 최후미 유닛 뒤로 옮겨 줄 맨 뒤에 세운다(소환 순서 = 줄 순서).
             float dir = lane.ForwardDir(faction);
             float startX = lane.SpawnX(faction) + dir * 0.5f;
-            const float queueSpacing = 0.4f; // 아군이 겹쳐 뭉쳐 행군(냥코식)하되 적당히. (0.9=줄서기, 0.25=과밀)
-            bool found = false; float rear = 0f;
-            var all = Targetables.All;
-            for (int i = 0; i < all.Count; i++)
-            {
-                var c = all[i] as Combatant;
-                if (c == null || c.faction != faction || c.IsDead) continue;
-                float cx = c.transform.position.x;
-                if (!found || cx * dir < rear * dir) { rear = cx; found = true; }
-            }
-            if (found)
-            {
-                float behind = rear - dir * queueSpacing;
-                if (behind * dir < startX * dir) startX = behind; // 최후미가 스폰점보다 앞이면 그 뒤에 배치
-            }
-            // 거점 뒤(플랫폼 밖)로는 넘기지 않음 — 극단적 과소환 시 거점 부근에 모인다.
-            if (startX * dir < lane.SpawnX(faction) * dir) startX = lane.SpawnX(faction);
 
             // 역할별 실루엣 차별화(P0): 복셀 교체 전까지 스케일로 포지션을 구분.
             Vector3 scale = Vector3.one;
@@ -70,7 +56,26 @@ namespace PaperHeroes
                 scale = new Vector3(1.45f, 1.45f, 1.45f);
             }
             go.transform.localScale = scale;
-            go.transform.position = new Vector3(startX, lane.groundY + scale.y, lane.laneZ);
+
+            // 같은 진영 최후미(가장 덜 전진한) 유닛 뒤에 스폰 → 새 유닛이 맨 뒤에서 출발(겹침 없는 초기 배치). 이후 아군=자유 행군, 적=줄(TryLeaderCapX).
+            Combatant rear = null;
+            var roster = Targetables.All;
+            for (int i = 0; i < roster.Count; i++)
+            {
+                var c = roster[i] as Combatant;
+                if (c == null || c.faction != faction || c.IsDead) continue;
+                if (rear == null || c.transform.position.x * dir < rear.transform.position.x * dir) rear = c;
+            }
+            if (rear != null)
+            {
+                float spacing = 0.5f * scale.x + Combatant.HalfWidth(rear);
+                float behind = rear.transform.position.x - dir * spacing;
+                if (behind * dir < startX * dir) startX = behind; // 최후미가 스폰점보다 앞이면 그 뒤에 배치
+            }
+            // 거점 뒤(플랫폼 밖)로는 넘기지 않음 — 과다 소환 시 거점 부근에 모인다(적은 후퇴금지라 화면밖 갇힘 방지).
+            if (startX * dir < lane.SpawnX(faction) * dir) startX = lane.SpawnX(faction);
+
+            go.transform.position = new Vector3(startX, lane.groundY + scale.y, lane.laneZ + Random.Range(-zJitter, zJitter));
 
             // 프로토 색 구분.
             var renderer = go.GetComponent<Renderer>();

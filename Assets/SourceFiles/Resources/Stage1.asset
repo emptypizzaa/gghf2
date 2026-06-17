@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 813463e8b5d5404ca5cc23581ba8911d, type: 3}
+  m_Name: Stage1
+  m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.StageData
+  stageId: stage1
+  displayName: Stage 1
+  allyBaseHp: 1000
+  enemyBaseHp: 1000
+  wave: {fileID: 11400000, guid: 1e712882eeb834b7aa067dcec676fd97, type: 2}
+  economy: {fileID: 11400000, guid: fbe0a05067a894d0ca6c736094c4db56, type: 2}
+  roster:
+  - {fileID: 11400000, guid: ef4ebf9b52a7a490aa3ceb8c015fc828, type: 2}
+  - {fileID: 11400000, guid: f0d11ea5fdd1f46a6a67f05d7bafa0be, type: 2}
+  - {fileID: 11400000, guid: 4a548348caee24d7b84beacf807dc7ed, type: 2}
+  timeLimit: 0
+  reward: 0
+  monsterLevel: 1
