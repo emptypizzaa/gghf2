@@ -159,6 +159,15 @@ namespace PaperHeroes
             float overlapR = cfg != null ? cfg.overlapRadius : 0.8f;
             float strength = cfg != null ? cfg.zSeparationStrength : 3f;
             float zBand = cfg != null ? cfg.zBand : 1.8f;
+
+            // 적은 줄(컬럼)을 유지하므로 부채꼴 Z 분리를 약하게(덜 퍼지게). 아군은 자유 행군 → 겹침 방지로 풀 적용.
+            if (faction == Faction.Enemy)
+            {
+                float es = cfg != null ? cfg.enemyFanScale : 0.3f;
+                strength *= es;
+                zBand *= es;
+            }
+
             if (overlapR <= 0f || strength <= 0f) return;
 
             float myX = transform.position.x;

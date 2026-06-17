@@ -14,8 +14,11 @@ namespace PaperHeroes
         [Tooltip("프로토 유닛 메쉬 형태")]
         public PrimitiveType primitive = PrimitiveType.Capsule;
 
-        [Tooltip("스폰 시 Z 지터(±). 겹치는 유닛을 시각적으로 부채꼴로 펼친다 — 전투/타게팅은 X축만 쓰므로 게임플레이 영향 0. 0=옛 1라인 정렬.")]
-        [SerializeField] private float zJitter = 0.4f;
+        [Tooltip("아군 스폰 Z 지터(±). 아군은 자유 행군이라 같은 X에 겹치므로 넉넉히 흩어 부채꼴로 펼친다. 전투/타게팅은 X축만 쓰므로 게임플레이 영향 0.")]
+        [SerializeField] private float allyZJitter = 0.4f;
+
+        [Tooltip("적 스폰 Z 지터(±). 적은 줄(컬럼)을 유지하므로 작게 — 부채꼴이 덜 퍼진다. 0=완전 일직선.")]
+        [SerializeField] private float enemyZJitter = 0.1f;
 
         private void Awake()
         {
@@ -75,7 +78,9 @@ namespace PaperHeroes
             // 거점 뒤(플랫폼 밖)로는 넘기지 않음 — 과다 소환 시 거점 부근에 모인다(적은 후퇴금지라 화면밖 갇힘 방지).
             if (startX * dir < lane.SpawnX(faction) * dir) startX = lane.SpawnX(faction);
 
-            go.transform.position = new Vector3(startX, lane.groundY + scale.y, lane.laneZ + Random.Range(-zJitter, zJitter));
+            // 진영별 Z 지터: 아군은 넓게(자유 행군 겹침 분산), 적은 좁게(컬럼 유지 — 부채꼴 덜 퍼지게).
+            float jitter = faction == Faction.Enemy ? enemyZJitter : allyZJitter;
+            go.transform.position = new Vector3(startX, lane.groundY + scale.y, lane.laneZ + Random.Range(-jitter, jitter));
 
             // 프로토 색 구분.
             var renderer = go.GetComponent<Renderer>();
