@@ -22,5 +22,15 @@ namespace PaperHeroes
         [Range(0f, 1f)]
         [Tooltip("적 진영의 부채꼴 강도·폭 배수(아군=1.0 기준). 적은 컬럼을 유지하므로 약하게 — 부채꼴이 덜 퍼진다. 0=적 부채꼴 끔. (적 컬럼 간격이 overlapRadius보다 커서 평소엔 거의 안 걸리지만, 따라붙는 전환 구간의 분리를 약화한다.)")]
         public float enemyFanScale = 0.3f;
+
+        [Header("근접 교전 부채꼴 (아군 Melee가 Attacking일 때만)")]
+        [Tooltip("근접이 교전 중일 때 Z 밀어내기 세기 배수. 뭉친 근접이 옆으로 더 빨리·세게 펼쳐져 '부채꼴 공격'처럼 보인다.")]
+        public float meleeAttackFanStrengthMul = 2.0f;
+
+        [Tooltip("근접 교전 중 Z 펼침 폭(zBand) 배수. 클수록 부채꼴이 넓게 벌어진다.")]
+        public float meleeAttackFanBandMul = 1.5f;
+
+        [Tooltip("근접 교전 중 겹침 감지 반경(overlapRadius) 배수. 클수록 더 멀리 있는 근접까지 부채꼴에 참여한다.")]
+        public float meleeAttackFanOverlapMul = 1.3f;
     }
 }

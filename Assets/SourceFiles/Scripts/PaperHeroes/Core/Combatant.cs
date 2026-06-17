@@ -168,6 +168,15 @@ namespace PaperHeroes
                 zBand *= es;
             }
 
+            // 근접(Melee)이 교전 중이면 부채꼴을 더 세고·넓게·멀리 — 뭉친 근접이 옆으로 펼쳐져 '부채꼴 공격'처럼 보인다.
+            // 시각 전용(Z만): 사거리·타게팅은 X축이라 불변. 적은 EnemyData라 (data is UnitData)=false → 자동 제외(아군 근접 한정).
+            if (Motion == ActState.Attacking && data is UnitData ud && ud.role == UnitRole.Melee)
+            {
+                strength *= cfg != null ? cfg.meleeAttackFanStrengthMul : 2f;
+                zBand   *= cfg != null ? cfg.meleeAttackFanBandMul     : 1.5f;
+                overlapR *= cfg != null ? cfg.meleeAttackFanOverlapMul  : 1.3f;
+            }
+
             if (overlapR <= 0f || strength <= 0f) return;
 
             float myX = transform.position.x;
