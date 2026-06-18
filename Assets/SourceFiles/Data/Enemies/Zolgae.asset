@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 784677b67267e47f9ba3b62cbee7458d, type: 3}
   m_Name: Zolgae
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.EnemyData
+  id: 
+  grade: 0
   displayName: "\uC878\uAC1C"
   prototypeColor: {r: 0.9, g: 0.3, b: 0.3, a: 1}
   maxHp: 170
@@ -19,5 +21,23 @@ MonoBehaviour:
   attackDamage: 14
   attackRange: 1
   attackInterval: 1
+  defense: 0
+  atkPerLevel: 0
+  hpPerLevel: 0
+  skillId: 
   isHealer: 0
+  usesProjectile: 0
+  projectileSpeed: 14
+  projectileHitRadius: 0.35
+  projectileMaxLifetime: 3
+  projectileArcHeight: 1.2
+  projectileColor: {r: 1, g: 0.95, b: 0.4, a: 1}
+  visualPrefab: {fileID: 0}
+  visualHeight: 2.2
+  modelYawOffset: 0
+  walkClip: {fileID: 0}
+  idleClip: {fileID: 0}
+  attackClip: {fileID: 0}
   isBoss: 0
+  killReward: 10
+  expReward: 0

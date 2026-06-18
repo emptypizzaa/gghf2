@@ -40,6 +40,13 @@ namespace PaperHeroes
             return true;
         }
 
+        /// <summary>자원 지급(몬스터 처치 보상 등). 상한으로 클램프. (설계 6번: 몬스터 처치 시 꿈에너지 획득)</summary>
+        public void AddMoney(float amount)
+        {
+            if (amount <= 0f) return;
+            CurrentMoney = Mathf.Min(MoneyCap, CurrentMoney + amount);
+        }
+
         /// <summary>테스트/디버그용 자원 핀(QA에서 게이트 검증 시 회복을 무시하고 고정).</summary>
         public void SetMoney(float amount) => CurrentMoney = Mathf.Clamp(amount, 0f, MoneyCap);
     }

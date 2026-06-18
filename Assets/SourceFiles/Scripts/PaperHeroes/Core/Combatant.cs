@@ -25,7 +25,14 @@ namespace PaperHeroes
         public int SpawnSeq { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetSpawnCounter() => _spawnCounter = 0;
+        private static void ResetStatics() { _spawnCounter = 0; _economy = null; }
+
+        // 적 처치 보상 지급용 경제 참조(최초 1회 탐색·캐시, 플레이 시작 시 리셋).
+        private static Economy _economy;
+        private static Economy EconomyRef
+        {
+            get { if (_economy == null) _economy = FindFirstObjectByType<Economy>(); return _economy; }
+        }
 
         // 겹침 회피 부채꼴 연출(시각 전용 Z 분리) 설정. Resources/FanConfig에서 읽음(없으면 폴백 기본값).
         private static FanConfig _fanConfig;
@@ -268,7 +275,19 @@ namespace PaperHeroes
         {
             if (amount <= 0f || IsDead) return;
             _hp -= amount;
-            if (_hp <= 0f) Destroy(gameObject);
+            if (_hp <= 0f)
+            {
+                GrantKillReward();
+                Destroy(gameObject);
+            }
+        }
+
+        /// <summary>적 처치 시 플레이어(아군) 경제에 꿈에너지 지급. (설계 6번: 몬스터 처치 시 획득)</summary>
+        private void GrantKillReward()
+        {
+            if (faction != Faction.Enemy) return;
+            if (data is EnemyData ed && ed.killReward > 0f)
+                EconomyRef?.AddMoney(ed.killReward);
         }
 
         public void Heal(float amount)
