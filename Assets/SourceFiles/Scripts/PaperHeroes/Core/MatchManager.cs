@@ -51,6 +51,10 @@ namespace PaperHeroes
 
             if (allyBase != null) allyBase.Destroyed += OnAllyBaseDestroyed;
             if (enemyBase != null) enemyBase.Destroyed += OnEnemyBaseDestroyed;
+
+            // 전투 HUD(거점 HP·나가기) 부착 — 런타임 UI라 씬 편집 없이 코드로 생성.
+            // 거점 해소·구독 이후에 부착해 HUD가 거점을 안전히 읽도록 한다(재시작 시 Start 재실행 → 재부착).
+            if (GetComponent<CombatHUD>() == null) gameObject.AddComponent<CombatHUD>();
         }
 
         void ResolveBasesIfNeeded()
@@ -83,6 +87,9 @@ namespace PaperHeroes
 
         void OnEnemyBaseDestroyed(BaseController _) => EndMatch(MatchState.Won);
         void OnAllyBaseDestroyed(BaseController _) => EndMatch(MatchState.Lost);
+
+        /// <summary>플레이어가 매치를 포기(전투 UI 나가기). 패배로 종료해 기존 결과 패널(다시 시작)을 재사용한다.</summary>
+        public void Concede() => EndMatch(MatchState.Lost);
 
         void EndMatch(MatchState result)
         {
