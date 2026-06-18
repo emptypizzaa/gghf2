@@ -77,10 +77,26 @@ namespace PaperHeroes
         {
             if (roster == null || index < 0 || index >= roster.Length) return false;
             UnitData d = roster[index];
-            return d != null
-                && _cooldownRemaining[index] <= 0f
-                && AllyUnitCount < _maxUnits
-                && economy != null && economy.CanAfford(d.cost);
+            if (d == null || _cooldownRemaining[index] > 0f) return false;
+            if (economy == null || !economy.CanAfford(d.cost)) return false;
+            // 머지(승급) 가능하면 새 유닛이 안 생기므로 캡 무관. 아니면 배치 캡 적용.
+            if (FindPromotable(d) == null && AllyUnitCount >= _maxUnits) return false;
+            return true;
+        }
+
+        /// <summary>같은 UnitData의 승급 가능(Tier&lt;3) 아군 중 가장 낮은 티어. 없으면 null. (설계 12번 머지)</summary>
+        private Combatant FindPromotable(UnitData d)
+        {
+            Combatant best = null;
+            var all = Targetables.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var c = all[i] as Combatant;
+                if (c == null || c.faction != faction || c.IsDead) continue;
+                if (c.data != d || c.Tier >= 3) continue;
+                if (best == null || c.Tier < best.Tier) best = c;
+            }
+            return best;
         }
 
         public bool CanIncreaseSlot() => economy != null && economy.CanAfford(slotIncreaseCost);
@@ -100,7 +116,11 @@ namespace PaperHeroes
             UnitData d = roster[index];
             if (!economy.TrySpend(d.cost)) return false;
 
-            if (spawner != null) spawner.SpawnUnit(d, faction);
+            // 동일 유닛이 있으면 승급(머지), 없으면 신규 소환. (설계 12번)
+            Combatant promo = FindPromotable(d);
+            if (promo != null) promo.TryPromote();
+            else if (spawner != null) spawner.SpawnUnit(d, faction);
+
             _cooldownRemaining[index] = d.summonCooldown;
             return true;
         }

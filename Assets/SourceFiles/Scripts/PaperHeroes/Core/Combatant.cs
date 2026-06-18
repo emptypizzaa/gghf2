@@ -44,6 +44,13 @@ namespace PaperHeroes
         public float CurrentHp => _hp;
         public bool IsDead => _hp <= 0f;
 
+        // 승급(머지) 티어(1~3). 동일 유닛 중복 소환 시 1단계씩 상승. 스탯은 read-time 배수로 적용(공유 SO 불변). (설계 12번)
+        public int Tier { get; private set; } = 1;
+        private float TierMul => Tier >= 3 ? 2f : (Tier == 2 ? 1.5f : 1f);
+        public float MaxHp => (data != null ? data.maxHp : 0f) * TierMul;
+        public float AttackDamage => (data != null ? data.attackDamage : 0f) * TierMul;
+        private Vector3 _baseScale = Vector3.one;
+
         /// <summary>외형 애니메이션용 행동 상태(이동/교전/정지).</summary>
         public enum ActState { Idle, Moving, Attacking }
         public ActState Motion { get; private set; } = ActState.Idle;
@@ -61,7 +68,8 @@ namespace PaperHeroes
             this.data = data;
             this.faction = faction;
             _lane = lane;
-            if (data != null) _hp = data.maxHp;
+            _baseScale = transform.localScale;
+            if (data != null) _hp = MaxHp;
             SpawnSeq = _spawnCounter++;
         }
 
@@ -71,7 +79,7 @@ namespace PaperHeroes
         private void Start()
         {
             if (_lane == null) _lane = FindFirstObjectByType<Lane>();
-            if (data != null && _hp <= 0f) _hp = data.maxHp; // Init에서 이미 설정됐으면 유지
+            if (data != null && _hp <= 0f) _hp = MaxHp; // Init에서 이미 설정됐으면 유지
         }
 
         private void Update()
@@ -91,7 +99,7 @@ namespace PaperHeroes
                     if (_attackTimer >= data.attackInterval)
                     {
                         _attackTimer = 0f;
-                        patient.Heal(data.attackDamage);
+                        patient.Heal(AttackDamage);
                     }
                     return;
                 }
@@ -108,9 +116,9 @@ namespace PaperHeroes
                     {
                         _attackTimer = 0f;
                         if (data.usesProjectile)
-                            Projectile.Spawn(MuzzlePosition(), target, data, faction);
+                            Projectile.Spawn(MuzzlePosition(), target, data, faction, AttackDamage);
                         else
-                            target.TakeDamage(data.attackDamage);
+                            target.TakeDamage(AttackDamage);
                     }
                     return;
                 }
@@ -246,9 +254,9 @@ namespace PaperHeroes
             {
                 var other = all[i] as Combatant;
                 if (other == null || other == this || other.IsDead) continue;
-                if (other.faction != faction || other.data == null || other.data.maxHp <= 0f) continue;
+                if (other.faction != faction || other.data == null || other.MaxHp <= 0f) continue;
 
-                float ratio = other.CurrentHp / other.data.maxHp;
+                float ratio = other.CurrentHp / other.MaxHp;
                 if (ratio >= 1f) continue; // 가득 찬 아군은 제외
 
                 float d = Mathf.Abs(other.transform.position.x - myX);
@@ -293,7 +301,30 @@ namespace PaperHeroes
         public void Heal(float amount)
         {
             if (amount <= 0f || IsDead || data == null) return;
-            _hp = Mathf.Min(data.maxHp, _hp + amount);
+            _hp = Mathf.Min(MaxHp, _hp + amount);
+        }
+
+        /// <summary>승급(머지): 티어 1단계 상승(최대 3). 스탯 배수↑, 체력 완전회복, 크기↑·발 지면 재정렬. (설계 12번)</summary>
+        public bool TryPromote()
+        {
+            if (Tier >= 3) return false;
+            Tier++;
+            _hp = MaxHp;                 // 체력 완전 회복(새 최대치)
+            ApplyTierVisual();
+            return true;
+        }
+
+        /// <summary>티어별 크기 변화(크기만, 리소스 불변). 스케일 후 발을 지면에 재정렬(가라앉음 방지).</summary>
+        private void ApplyTierVisual()
+        {
+            float mul = Tier >= 3 ? 1.4f : (Tier == 2 ? 1.2f : 1f);
+            transform.localScale = _baseScale * mul;
+            if (_lane != null)
+            {
+                Vector3 p = transform.position;
+                p.y = _lane.groundY + transform.localScale.y; // 프리미티브 bottom = pos.y - scale.y → groundY
+                transform.position = p;
+            }
         }
     }
 }

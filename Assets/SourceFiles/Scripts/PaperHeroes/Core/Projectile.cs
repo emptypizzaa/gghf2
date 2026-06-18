@@ -26,7 +26,7 @@ namespace PaperHeroes
         private float _age;
         private bool _missMode;
 
-        public static Projectile Spawn(Vector3 muzzle, IDamageable target, CombatantData data, Faction faction)
+        public static Projectile Spawn(Vector3 muzzle, IDamageable target, CombatantData data, Faction faction, float damage)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             go.name = "Projectile";
@@ -63,7 +63,7 @@ namespace PaperHeroes
             var p = go.AddComponent<Projectile>();
             p._target = target;
             p._targetComponent = target as Component;
-            p._damage = data.attackDamage;        // 발사 시점 캡처
+            p._damage = damage;                   // 발사 시점 캡처(승급 배수 반영)
             p._speed = data.projectileSpeed;
             p._hitRadius = data.projectileHitRadius;
             p._arcHeight = data.projectileArcHeight;
