@@ -18,10 +18,20 @@ namespace PaperHeroes
         public UnitSpawner spawner;
         public Faction faction = Faction.Ally;
 
+        [Header("배치 제한 (설계 8번)")]
+        [Tooltip("초기 최대 동시 배치 용병 수")]
+        public int initialMaxUnits = 5;
+        [Tooltip("최대 용병 수 +1 증가 비용(꿈에너지)")]
+        public float slotIncreaseCost = 300f;
+
+        private int _maxUnits;
         private float[] _cooldownRemaining;
         private TextMeshProUGUI _moneyText;
+        private TextMeshProUGUI _unitCountText;
         private Button[] _buttons;
         private TextMeshProUGUI[] _labels;
+        private Button _slotButton;
+        private TextMeshProUGUI _slotLabel;
 
         private void Awake()
         {
@@ -31,6 +41,7 @@ namespace PaperHeroes
 
         private void Start()
         {
+            _maxUnits = Mathf.Max(1, initialMaxUnits);
             _cooldownRemaining = new float[roster != null ? roster.Length : 0];
             BuildUI();
             RefreshUI();
@@ -44,13 +55,43 @@ namespace PaperHeroes
             RefreshUI();
         }
 
+        /// <summary>현재 살아있는 아군(this.faction) 용병 수. (설계 8번 배치 제한 판정용)</summary>
+        public int AllyUnitCount
+        {
+            get
+            {
+                int n = 0;
+                var all = Targetables.All;
+                for (int i = 0; i < all.Count; i++)
+                {
+                    var c = all[i] as Combatant;
+                    if (c != null && c.faction == faction && !c.IsDead) n++;
+                }
+                return n;
+            }
+        }
+
+        public int MaxUnits => _maxUnits;
+
         public bool CanSummon(int index)
         {
             if (roster == null || index < 0 || index >= roster.Length) return false;
             UnitData d = roster[index];
             return d != null
                 && _cooldownRemaining[index] <= 0f
+                && AllyUnitCount < _maxUnits
                 && economy != null && economy.CanAfford(d.cost);
+        }
+
+        public bool CanIncreaseSlot() => economy != null && economy.CanAfford(slotIncreaseCost);
+
+        /// <summary>최대 배치 수 +1 (비용 차감). (설계 8번: 증가 비용 300, 상한 없음)</summary>
+        public bool TryIncreaseSlot()
+        {
+            if (!CanIncreaseSlot()) return false;
+            if (!economy.TrySpend(slotIncreaseCost)) return false;
+            _maxUnits++;
+            return true;
         }
 
         public bool TrySummon(int index)
@@ -106,12 +147,34 @@ namespace PaperHeroes
                     new Vector2(x, 110f), new Vector2(bw, bh), out _labels[i]);
                 _buttons[i].onClick.AddListener(() => TrySummon(idx));
             }
+
+            // 용병 수 / 최대 표시 (자원 텍스트 아래)
+            _unitCountText = CreateText(canvasGo.transform, "UnitCountText", 40f);
+            var urt = _unitCountText.rectTransform;
+            urt.anchorMin = urt.anchorMax = urt.pivot = new Vector2(0.5f, 1f);
+            urt.sizeDelta = new Vector2(600f, 60f);
+            urt.anchoredPosition = new Vector2(0f, -168f);
+
+            // 용병 수 증가 버튼 (소환 버튼 행 우측 — 설계 5번/8번)
+            float slotW = 230f;
+            _slotButton = CreateButton(canvasGo.transform, "IncreaseSlot",
+                new Vector2(totalW / 2f + gap + slotW / 2f, 110f), new Vector2(slotW, bh), out _slotLabel);
+            _slotButton.onClick.AddListener(() => TryIncreaseSlot());
         }
 
         private void RefreshUI()
         {
             if (_moneyText != null && economy != null)
                 _moneyText.text = "돈  " + Mathf.FloorToInt(economy.CurrentMoney);
+
+            if (_unitCountText != null)
+                _unitCountText.text = "용병  " + AllyUnitCount + " / " + _maxUnits;
+
+            if (_slotButton != null)
+            {
+                _slotButton.interactable = CanIncreaseSlot();
+                _slotLabel.text = "용병 수 +1\n$" + (int)slotIncreaseCost;
+            }
 
             if (_buttons == null) return;
             for (int i = 0; i < _buttons.Length; i++)
