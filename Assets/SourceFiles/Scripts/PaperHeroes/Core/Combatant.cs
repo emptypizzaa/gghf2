@@ -125,19 +125,31 @@ namespace PaperHeroes
             }
 
             // 행동 대상이 없으면 적 거점 방향으로 전진.
-            // 아군 = 자유 행군(통과·겹침·추월 허용, 캡 없음). 적 = 줄 유지(앞 유닛 추월 금지).
+            // 아군 = 자유 행군(통과·겹침·추월 허용, 캡 없음). 적 = 줄 유지(앞 유닛 추월 금지). 아군 힐러 = 전선 뒤 standoff 유지.
             Motion = ActState.Moving;
             float dir = _lane.ForwardDir(faction);
             float curX = transform.position.x;
-            float newX = curX + dir * data.moveSpeed * Time.deltaTime;
-            if (faction == Faction.Enemy)
+            float newX;
+            if (data.isHealer && faction != Faction.Enemy)
             {
-                if (TryLeaderCapX(dir, out float capX) && newX * dir > capX * dir)
-                    newX = capX;                          // 앞 유닛 뒤 한계로 캡(추월 금지)
-                if (newX * dir < curX * dir) newX = curX; // 후퇴 금지(한계가 현 위치보다 뒤면 정지)
+                // 힐러: 적진 직진 대신 가장 앞선 아군 전투원 뒤 standoff 슬롯으로 호밍(돌진 금지).
+                // 선두 사망으로 슬롯이 뒤로 점프하면 후퇴 허용(안전 리포지션). 앞에 전투원이 없으면 단독 전진 금지(대기).
+                newX = TryHealerStandoffX(dir, out float standoffX)
+                    ? Mathf.MoveTowards(curX, standoffX, data.moveSpeed * Time.deltaTime)
+                    : curX;
+            }
+            else
+            {
+                newX = curX + dir * data.moveSpeed * Time.deltaTime;
+                if (faction == Faction.Enemy)
+                {
+                    if (TryLeaderCapX(dir, out float capX) && newX * dir > capX * dir)
+                        newX = capX;                          // 앞 유닛 뒤 한계로 캡(추월 금지)
+                    if (newX * dir < curX * dir) newX = curX; // 후퇴 금지(한계가 현 위치보다 뒤면 정지)
+                }
             }
             transform.position = new Vector3(newX, transform.position.y, transform.position.z);
-            if (Mathf.Approximately(newX, curX)) Motion = ActState.Idle; // 캡으로 제자리면(적 줄 대기) 걷기 애니 방지
+            if (Mathf.Approximately(newX, curX)) Motion = ActState.Idle; // 캡으로 제자리면(적 줄/힐러 대기) 걷기 애니 방지
         }
 
         /// <summary>
@@ -160,6 +172,32 @@ namespace PaperHeroes
             if (leader == null) return false;
             float spacing = HalfWidth(this) + HalfWidth(leader); // footprint(겹침 없음)
             capX = leader.transform.position.x - dir * spacing;
+            return true;
+        }
+
+        // 힐러가 머무는 전선 뒤 거리 = attackRange * 이 비율. 0.6 → 선두 전투원이 힐 사거리 안(여유). (튜닝 노브)
+        private const float HealerStandoffFrac = 0.6f;
+
+        /// <summary>
+        /// (아군 힐러 전용) 가장 전진한 아군 전투원(비힐러) 뒤 standoff 지점을 전진 목표 X로 돌려준다.
+        /// 그 지점으로 호밍하면 전선 전투원이 힐 사거리에 들어와 회복 대상이 된다(포지션 삼각).
+        /// 앞에 아군 전투원이 없으면(단독) false → 혼자 적진 돌진 금지(대기). 적·비힐러는 호출하지 않음.
+        /// </summary>
+        private bool TryHealerStandoffX(float dir, out float standoffX)
+        {
+            standoffX = 0f;
+            Combatant front = null;
+            var all = Targetables.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var c = all[i] as Combatant;
+                if (c == null || c == this || c.IsDead || c.faction != faction) continue;
+                if (c.data != null && c.data.isHealer) continue;                          // 다른 힐러는 전선 기준 제외
+                if (front == null || c.transform.position.x * dir > front.transform.position.x * dir)
+                    front = c;                                                             // 가장 전진(forward 방향 X 최대)
+            }
+            if (front == null) return false;
+            standoffX = front.transform.position.x - dir * (data.attackRange * HealerStandoffFrac);
             return true;
         }
 

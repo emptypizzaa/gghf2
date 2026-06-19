@@ -22,6 +22,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ef4ebf9b52a7a490aa3ceb8c015fc828, type: 2}
   - {fileID: 11400000, guid: f0d11ea5fdd1f46a6a67f05d7bafa0be, type: 2}
   - {fileID: 11400000, guid: 4a548348caee24d7b84beacf807dc7ed, type: 2}
+  - {fileID: 11400000, guid: 87f99982118b84ed29866042f8f6be1f, type: 2}
   timeLimit: 0
   reward: 0
   monsterLevel: 1
