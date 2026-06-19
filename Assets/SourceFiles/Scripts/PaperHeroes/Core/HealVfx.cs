@@ -14,49 +14,72 @@ namespace PaperHeroes
         const float FlightDur = 0.25f;
         static readonly Color HealColor = new Color(0.4f, 1f, 0.5f);
 
+        const float BlinkPeriod = 0.045f;                        // ~11Hz 점멸
+
         private Vector3 _from, _to;
         private int _amount;
         private float _age;
+        private Renderer[] _barRenderers;                        // 적십자 막대만(트레일 제외 — 직선 자취는 끊기지 않게)
 
         public static void Play(Vector3 from, Vector3 to, int amount)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            go.name = "HealOrb";
-            var col = go.GetComponent<Collider>();
-            if (col != null) Destroy(col);                       // 물리 충돌 불필요
+            var go = new GameObject("HealOrb");
             go.transform.position = from;
-            go.transform.localScale = Vector3.one * 0.32f;
 
-            var r = go.GetComponent<Renderer>();
-            if (r != null)
-            {
-                var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                mat.SetColor("_BaseColor", HealColor);
-                mat.EnableKeyword("_EMISSION");
-                mat.SetColor("_EmissionColor", HealColor * 4f);  // Bloom 글로우(꺼져 있어도 밝은 초록)
-                r.sharedMaterial = mat;
+            // 초록 적십자(+) — 세로·가로 얇은 큐브 2개(Emission 초록 글로우)
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.SetColor("_BaseColor", HealColor);
+            mat.EnableKeyword("_EMISSION");
+            mat.SetColor("_EmissionColor", HealColor * 2.5f);    // 글로우(×2.5 — 색이 흰색으로 날아가지 않게)
+            MakeBar(go.transform, mat, new Vector3(0.22f, 0.78f, 0.09f)); // 세로 막대(크게 — 적십자로 또렷이)
+            MakeBar(go.transform, mat, new Vector3(0.78f, 0.22f, 0.09f)); // 가로 막대
 
-                var trail = go.AddComponent<TrailRenderer>();    // 비행 가시성
-                trail.time = 0.18f;
-                trail.startWidth = 0.2f;
-                trail.endWidth = 0f;
-                trail.numCapVertices = 2;
-                trail.material = mat;
-                trail.startColor = HealColor;
-                trail.endColor = new Color(HealColor.r, HealColor.g, HealColor.b, 0f);
-            }
+            // 적십자가 정면으로 읽히게 카메라 향해 1회 정렬. Camera.main은 씬 카메라 Untagged라 null → 폴백.
+            var cam = Camera.main != null ? Camera.main : FindFirstObjectByType<Camera>();
+            if (cam != null) go.transform.rotation = Quaternion.LookRotation(go.transform.position - cam.transform.position);
+
+            // 직선 비행 자취(초록 트레일) — "쏘는" 직선이 보이게(점멸 안 함, 끊김 방지)
+            var trail = go.AddComponent<TrailRenderer>();
+            trail.time = 0.16f;
+            trail.startWidth = 0.16f;
+            trail.endWidth = 0f;
+            trail.numCapVertices = 2;
+            trail.material = mat;
+            trail.startColor = HealColor;
+            trail.endColor = new Color(HealColor.r, HealColor.g, HealColor.b, 0f);
 
             var fx = go.AddComponent<HealVfx>();
             fx._from = from;
             fx._to = to;
             fx._amount = amount;
+            fx._barRenderers = go.GetComponentsInChildren<MeshRenderer>(); // 큐브 막대만(트레일 제외)
+        }
+
+        // 적십자 막대 1개(콜라이더 제거, 공유 머티리얼) — 부모에 부착.
+        private static void MakeBar(Transform parent, Material mat, Vector3 scale)
+        {
+            var bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            bar.name = "Bar";
+            var col = bar.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+            bar.transform.SetParent(parent, false);
+            bar.transform.localScale = scale;
+            var r = bar.GetComponent<Renderer>();
+            if (r != null) r.sharedMaterial = mat;
         }
 
         private void Update()
         {
             _age += Time.deltaTime;
             float t = Mathf.Clamp01(_age / FlightDur);
-            transform.position = Vector3.Lerp(_from, _to, t);   // 고정 두 점 사이 — 외부 참조 0
+            transform.position = Vector3.Lerp(_from, _to, t);   // 직선 비행(고정 두 점 — 외부 참조 0)
+
+            // 점멸(blink) — "회복되는 느낌". 적십자 막대만 깜빡(트레일은 유지돼 직선 자취가 이어짐).
+            bool on = (Mathf.FloorToInt(_age / BlinkPeriod) & 1) == 0;
+            if (_barRenderers != null)
+                for (int i = 0; i < _barRenderers.Length; i++)
+                    if (_barRenderers[i] != null) _barRenderers[i].enabled = on;
+
             if (t >= 1f)
             {
                 HealNumber.Spawn(_to, _amount);
