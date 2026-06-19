@@ -30,6 +30,8 @@ namespace PaperHeroes
         private TextMeshProUGUI _unitCountText;
         private Button[] _buttons;
         private TextMeshProUGUI[] _labels;
+        private Button[] _upgradeButtons;
+        private TextMeshProUGUI[] _upgradeLabels;
         private Button _slotButton;
         private TextMeshProUGUI _slotLabel;
 
@@ -79,8 +81,8 @@ namespace PaperHeroes
             UnitData d = roster[index];
             if (d == null || _cooldownRemaining[index] > 0f) return false;
             if (economy == null || !economy.CanAfford(d.cost)) return false;
-            // 머지(승급) 가능하면 새 유닛이 안 생기므로 캡 무관. 아니면 배치 캡 적용.
-            if (FindPromotable(d) == null && AllyUnitCount >= _maxUnits) return false;
+            // 소환은 항상 새 유닛 추가 → 배치 캡 적용(승급은 별도 강화 버튼 TryUpgrade로 분리).
+            if (AllyUnitCount >= _maxUnits) return false;
             return true;
         }
 
@@ -116,12 +118,32 @@ namespace PaperHeroes
             UnitData d = roster[index];
             if (!economy.TrySpend(d.cost)) return false;
 
-            // 동일 유닛이 있으면 승급(머지), 없으면 신규 소환. (설계 12번)
-            Combatant promo = FindPromotable(d);
-            if (promo != null) promo.TryPromote();
-            else if (spawner != null) spawner.SpawnUnit(d, faction);
+            // 소환은 항상 새 유닛 추가(승급은 TryUpgrade로 분리). (설계 8번 배치 캡 적용)
+            if (spawner != null) spawner.SpawnUnit(d, faction);
 
             _cooldownRemaining[index] = d.summonCooldown;
+            return true;
+        }
+
+        /// <summary>강화(승급) 가능? 같은 유닛의 승급 가능(Tier&lt;3) 아군이 있고 비용을 감당할 수 있으면 true. (배치 캡 무관 — 새 유닛 안 생김)</summary>
+        public bool CanUpgrade(int index)
+        {
+            if (roster == null || index < 0 || index >= roster.Length) return false;
+            UnitData d = roster[index];
+            if (d == null) return false;
+            if (economy == null || !economy.CanAfford(d.cost)) return false;
+            return FindPromotable(d) != null;
+        }
+
+        /// <summary>강화: 같은 유닛 중 가장 낮은 티어 아군을 1단계 승급(비용 차감). 새 유닛은 안 생긴다. (설계 12번 머지 — 트리거를 소환에서 분리)</summary>
+        public bool TryUpgrade(int index)
+        {
+            if (!CanUpgrade(index)) return false;
+            UnitData d = roster[index];
+            Combatant promo = FindPromotable(d);
+            if (promo == null) return false;
+            if (!economy.TrySpend(d.cost)) return false;
+            promo.TryPromote();
             return true;
         }
 
@@ -153,19 +175,28 @@ namespace PaperHeroes
             mrt.sizeDelta = new Vector2(600f, 90f);
             mrt.anchoredPosition = new Vector2(0f, -70f);
 
-            // 버튼들 (하단 중앙)
+            // 버튼들 (하단 중앙) — 소환 버튼(크게) + 바로 위 강화 버튼(작게, per-type)
             int n = roster != null ? roster.Length : 0;
             _buttons = new Button[n];
             _labels = new TextMeshProUGUI[n];
-            float bw = 300f, bh = 150f, gap = 36f;
+            _upgradeButtons = new Button[n];
+            _upgradeLabels = new TextMeshProUGUI[n];
+            float bw = 300f, bh = 150f, gap = 36f, ubh = 64f;
             float totalW = n * bw + (n - 1) * gap;
             for (int i = 0; i < n; i++)
             {
                 float x = -totalW / 2f + bw / 2f + i * (bw + gap);
                 int idx = i;
+                // 소환 버튼(하단) — 항상 새 유닛 추가
                 _buttons[i] = CreateButton(canvasGo.transform, "Summon_" + i,
                     new Vector2(x, 110f), new Vector2(bw, bh), out _labels[i]);
                 _buttons[i].onClick.AddListener(() => TrySummon(idx));
+                // 강화 버튼(소환 버튼 바로 위, 작게) — 승급을 소환과 분리. 호박색으로 구분.
+                _upgradeButtons[i] = CreateButton(canvasGo.transform, "Upgrade_" + i,
+                    new Vector2(x, 110f + bh + 12f), new Vector2(bw, ubh), out _upgradeLabels[i]);
+                _upgradeButtons[i].onClick.AddListener(() => TryUpgrade(idx));
+                if (_upgradeButtons[i].targetGraphic is Image uimg)
+                    uimg.color = new Color(0.34f, 0.28f, 0.12f, 0.96f);
             }
 
             // 용병 수 / 최대 표시 (자원 텍스트 아래)
@@ -205,6 +236,12 @@ namespace PaperHeroes
                     ? "\n쿨 " + _cooldownRemaining[i].ToString("F1") + "s"
                     : "";
                 _labels[i].text = (d != null ? d.displayName : "-") + "\n$" + (d != null ? (int)d.cost : 0) + cd;
+
+                if (_upgradeButtons != null && _upgradeButtons[i] != null)
+                {
+                    _upgradeButtons[i].interactable = CanUpgrade(i);
+                    _upgradeLabels[i].text = "강화\n$" + (d != null ? (int)d.cost : 0);
+                }
             }
         }
 
