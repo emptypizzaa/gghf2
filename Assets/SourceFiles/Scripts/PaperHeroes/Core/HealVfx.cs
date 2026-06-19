@@ -31,8 +31,8 @@ namespace PaperHeroes
             mat.SetColor("_BaseColor", HealColor);
             mat.EnableKeyword("_EMISSION");
             mat.SetColor("_EmissionColor", HealColor * 2.5f);    // 글로우(×2.5 — 색이 흰색으로 날아가지 않게)
-            MakeBar(go.transform, mat, new Vector3(0.22f, 0.78f, 0.09f)); // 세로 막대(크게 — 적십자로 또렷이)
-            MakeBar(go.transform, mat, new Vector3(0.78f, 0.22f, 0.09f)); // 가로 막대
+            MakeBar(go.transform, mat, new Vector3(0.28f, 1.05f, 0.09f)); // 세로 막대(더 크게 — 적십자 또렷)
+            MakeBar(go.transform, mat, new Vector3(1.05f, 0.28f, 0.09f)); // 가로 막대
 
             // 적십자가 정면으로 읽히게 카메라 향해 1회 정렬. Camera.main은 씬 카메라 Untagged라 null → 폴백.
             var cam = Camera.main != null ? Camera.main : FindFirstObjectByType<Camera>();
