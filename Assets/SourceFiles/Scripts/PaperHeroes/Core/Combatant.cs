@@ -99,7 +99,14 @@ namespace PaperHeroes
                     if (_attackTimer >= data.attackInterval)
                     {
                         _attackTimer = 0f;
-                        patient.Heal(AttackDamage);
+                        float before = patient.CurrentHp;
+                        patient.Heal(AttackDamage);                    // 힐 로직·수치 무변경
+                        float healed = patient.CurrentHp - before;     // 실제 회복량(클램프 반영)
+                        if (healed > 0f)                               // 코스메틱 연출만 — 힐 틱(attackInterval)당 1회 = 도배 아님
+                            HealVfx.Play(
+                                transform.position + Vector3.up * transform.localScale.y * 0.6f,          // 힐러 staff(스냅샷)
+                                patient.transform.position + Vector3.up * patient.transform.localScale.y, // 대상 머리(스냅샷)
+                                Mathf.RoundToInt(healed));
                     }
                     return;
                 }
