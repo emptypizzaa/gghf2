@@ -24,6 +24,9 @@ namespace PaperHeroes
         [Tooltip("최대 용병 수 +1 증가 비용(꿈에너지)")]
         public float slotIncreaseCost = 300f;
 
+        [Tooltip("강화(승급) 비용 = 소환 비용 × 이 배수")]
+        public float upgradeCostMul = 2f;
+
         private int _maxUnits;
         private float[] _cooldownRemaining;
         private TextMeshProUGUI _moneyText;
@@ -125,13 +128,16 @@ namespace PaperHeroes
             return true;
         }
 
+        /// <summary>해당 유닛의 강화(승급) 비용 = 소환 비용 × upgradeCostMul.</summary>
+        public float UpgradeCost(UnitData d) => d != null ? d.cost * upgradeCostMul : 0f;
+
         /// <summary>강화(승급) 가능? 같은 유닛의 승급 가능(Tier&lt;3) 아군이 있고 비용을 감당할 수 있으면 true. (배치 캡 무관 — 새 유닛 안 생김)</summary>
         public bool CanUpgrade(int index)
         {
             if (roster == null || index < 0 || index >= roster.Length) return false;
             UnitData d = roster[index];
             if (d == null) return false;
-            if (economy == null || !economy.CanAfford(d.cost)) return false;
+            if (economy == null || !economy.CanAfford(UpgradeCost(d))) return false;
             return FindPromotable(d) != null;
         }
 
@@ -142,7 +148,7 @@ namespace PaperHeroes
             UnitData d = roster[index];
             Combatant promo = FindPromotable(d);
             if (promo == null) return false;
-            if (!economy.TrySpend(d.cost)) return false;
+            if (!economy.TrySpend(UpgradeCost(d))) return false;
             promo.TryPromote();
             return true;
         }
@@ -240,7 +246,7 @@ namespace PaperHeroes
                 if (_upgradeButtons != null && _upgradeButtons[i] != null)
                 {
                     _upgradeButtons[i].interactable = CanUpgrade(i);
-                    _upgradeLabels[i].text = "강화\n$" + (d != null ? (int)d.cost : 0);
+                    _upgradeLabels[i].text = "강화\n$" + (int)UpgradeCost(d);
                 }
             }
         }
