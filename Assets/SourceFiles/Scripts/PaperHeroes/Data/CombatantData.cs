@@ -92,6 +92,9 @@ namespace PaperHeroes
         public AnimationClip idleClip;
         public AnimationClip attackClip;
 
+        [Tooltip("사망 애니메이션 클립(선택). 지정 시 죽을 때 1회 재생(마지막 프레임 유지) 후 소멸. 미지정=즉시 소멸(기존).")]
+        public AnimationClip deathClip;
+
         [Header("무기 소켓(선택)")]
         [Tooltip("숨길 모델 자식 노드명(예: 지팡이 'Staff-Global'). 그 하위 Renderer를 끈다. 빈값=숨김 없음.")]
         public string hideChildNode;

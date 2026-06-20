@@ -38,6 +38,7 @@ MonoBehaviour:
   walkClip: {fileID: -3423286967834323061, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
   idleClip: {fileID: -7347882153758487832, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
   attackClip: {fileID: -6594115477587254448, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
+  deathClip: {fileID: 3234294941683401133, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
   hideChildNode: 
   weaponPrefab: {fileID: 0}
   usePlaceholderBow: 0

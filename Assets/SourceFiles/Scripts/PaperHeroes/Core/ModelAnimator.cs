@@ -14,12 +14,14 @@ namespace PaperHeroes
         public AnimationClip walk;
         public AnimationClip idle;
         public AnimationClip attack;
+        public AnimationClip death;
 
         private Animation _anim;
         private string _walkName;
         private string _idleName;
         private string _attackName;
         private string _current;
+        private bool _dead;
 
         private void Start()
         {
@@ -40,7 +42,7 @@ namespace PaperHeroes
 
         private void Update()
         {
-            if (combatant == null || _anim == null) return;
+            if (_dead || combatant == null || _anim == null) return; // 사망 재생 중엔 상태기반 전환 중단
 
             string want;
             switch (combatant.Motion)
@@ -66,6 +68,17 @@ namespace PaperHeroes
             var state = _anim[clip.name];
             if (state != null) state.wrapMode = wrap;
             return clip.name;
+        }
+
+        /// <summary>사망 애니를 1회 재생(마지막 프레임=죽음 포즈 유지)하고 상태기반 전환을 멈춘다. 클립 길이(초) 반환, 없으면 0.</summary>
+        public float PlayDeath()
+        {
+            if (death == null || _anim == null) return 0f;
+            _dead = true;
+            string n = Register(death, WrapMode.ClampForever);
+            if (string.IsNullOrEmpty(n)) return 0f;
+            _anim.CrossFade(n, 0.1f);
+            return death.length;
         }
     }
 }

@@ -107,13 +107,14 @@ namespace PaperHeroes
                 SharpenTextures(model); // 복셀/픽셀아트 텍스처를 Point 필터로(보간 뭉개짐 방지)
                 ApplyWeaponSocket(model, data); // 무기 노드 숨김(예: 지팡이) + 손 소켓에 prop(활) 부착(선택)
 
-                if (data.walkClip != null || data.idleClip != null || data.attackClip != null)
+                if (data.walkClip != null || data.idleClip != null || data.attackClip != null || data.deathClip != null)
                 {
                     var anim = model.AddComponent<ModelAnimator>();
                     anim.combatant = combatant;
                     anim.walk = data.walkClip;
                     anim.idle = data.idleClip;
                     anim.attack = data.attackClip;
+                    anim.death = data.deathClip;
                 }
             }
 

@@ -85,6 +85,7 @@ namespace PaperHeroes
         private void Update()
         {
             if (data == null || _lane == null) return;
+            if (_dying) return; // 사망 연출 중 — 전투/이동/팬 정지(소멸 대기).
 
             ApplyFanSeparation(); // 겹침 회피 Z 분리(시각 전용 — X/전투/타게팅 불변). 공격·이동과 무관하게 매 프레임.
 
@@ -324,6 +325,8 @@ namespace PaperHeroes
             return p;
         }
 
+        private bool _dying;
+
         public void TakeDamage(float amount)
         {
             if (amount <= 0f || IsDead) return;
@@ -331,8 +334,19 @@ namespace PaperHeroes
             if (_hp <= 0f)
             {
                 GrantKillReward();
-                Destroy(gameObject);
+                StartDeath();
             }
+        }
+
+        /// <summary>사망: 즉시 소멸 대신 사망 애니를 1회 재생하고 클립 길이만큼 뒤 소멸. 게임플레이 타겟 리스트에선 즉시 퇴장(연출용 GameObject만 남김).</summary>
+        private void StartDeath()
+        {
+            if (_dying) return;
+            _dying = true;
+            Targetables.Unregister(this); // IsDead로도 걸러지지만, 죽는 몸이 산 유닛을 막거나 밀지 않도록 즉시 리스트 퇴장(멱등).
+            var ma = GetComponentInChildren<ModelAnimator>();
+            float dur = ma != null ? ma.PlayDeath() : 0f;
+            Destroy(gameObject, dur); // dur=0(모델/사망클립 없음)이면 즉시 소멸 — 기존 동작 보존.
         }
 
         /// <summary>적 처치 시 플레이어(아군) 경제에 꿈에너지 지급. (설계 6번: 몬스터 처치 시 획득)</summary>
