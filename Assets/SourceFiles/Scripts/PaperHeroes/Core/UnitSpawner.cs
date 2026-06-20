@@ -105,6 +105,7 @@ namespace PaperHeroes
                 model.transform.rotation = Quaternion.LookRotation(march, Vector3.up) * Quaternion.Euler(0f, data.modelYawOffset, 0f);
                 FitModel(go.transform, model, data.visualHeight);
                 SharpenTextures(model); // 복셀/픽셀아트 텍스처를 Point 필터로(보간 뭉개짐 방지)
+                ApplyWeaponSocket(model, data); // 무기 노드 숨김(예: 지팡이) + 손 소켓에 prop(활) 부착(선택)
 
                 if (data.walkClip != null || data.idleClip != null || data.attackClip != null)
                 {
@@ -168,6 +169,45 @@ namespace PaperHeroes
             for (int i = 1; i < rends.Length; i++) b2.Encapsulate(rends[i].bounds);
             float footY = root.position.y - root.lossyScale.y;
             model.transform.position += new Vector3(0f, footY - b2.min.y, 0f);
+        }
+
+        /// <summary>
+        /// 무기 소켓(선택): 모델의 특정 노드(예: 지팡이)를 숨기고, 손 노드에 무기 prop(활)을 부착한다.
+        /// 전부 데이터 조건부 — 미설정 유닛은 no-op. art-agnostic: weaponPrefab(활 glb) 또는 절차적 플레이스홀더.
+        /// </summary>
+        private void ApplyWeaponSocket(GameObject model, CombatantData data)
+        {
+            // 1) 숨길 노드(예: 지팡이 'Staff-Global')의 하위 Renderer 비활성.
+            if (!string.IsNullOrEmpty(data.hideChildNode))
+            {
+                var hide = FindDeep(model, data.hideChildNode);
+                if (hide != null)
+                {
+                    var rs = hide.GetComponentsInChildren<Renderer>(true);
+                    for (int i = 0; i < rs.Length; i++) rs[i].enabled = false;
+                }
+            }
+
+            // 2) 무기 prop 부착: weaponPrefab 우선, 없으면 절차적 플레이스홀더 활.
+            GameObject prop = null;
+            if (data.weaponPrefab != null) prop = Instantiate(data.weaponPrefab);
+            else if (data.usePlaceholderBow) prop = BowProp.Create();
+            if (prop == null) return;
+
+            Transform socket = FindDeep(model, data.weaponSocketNode);
+            prop.transform.SetParent(socket != null ? socket : model.transform, false);
+            prop.transform.localPosition = data.weaponLocalPos;
+            prop.transform.localRotation = Quaternion.Euler(data.weaponLocalEuler);
+            prop.transform.localScale = Vector3.one * data.weaponScale;
+        }
+
+        /// <summary>모델 하위에서 이름으로 노드를 찾는다(비활성 포함). 빈 이름이면 null.</summary>
+        private static Transform FindDeep(GameObject root, string name)
+        {
+            if (string.IsNullOrEmpty(name)) return null;
+            var all = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++) if (all[i].name == name) return all[i];
+            return null;
         }
     }
 }

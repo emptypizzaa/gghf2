@@ -91,5 +91,27 @@ namespace PaperHeroes
         public AnimationClip walkClip;
         public AnimationClip idleClip;
         public AnimationClip attackClip;
+
+        [Header("무기 소켓(선택)")]
+        [Tooltip("숨길 모델 자식 노드명(예: 지팡이 'Staff-Global'). 그 하위 Renderer를 끈다. 빈값=숨김 없음.")]
+        public string hideChildNode;
+
+        [Tooltip("손에 부착할 무기 prop(예: 활 glb). null이고 usePlaceholderBow면 절차적 활.")]
+        public GameObject weaponPrefab;
+
+        [Tooltip("weaponPrefab 미설정 시 절차적 플레이스홀더 활을 생성·부착.")]
+        public bool usePlaceholderBow = false;
+
+        [Tooltip("무기 prop의 부모 노드명(예: 손 'Right_Hand-Global'). 빈값=모델 루트.")]
+        public string weaponSocketNode;
+
+        [Tooltip("무기 prop 로컬 위치(소켓 기준).")]
+        public Vector3 weaponLocalPos;
+
+        [Tooltip("무기 prop 로컬 회전(오일러, 소켓 기준).")]
+        public Vector3 weaponLocalEuler;
+
+        [Tooltip("무기 prop 로컬 스케일 배수(소켓 본 스케일에 곱해짐 — 시각 튜닝).")]
+        public float weaponScale = 1f;
     }
 }

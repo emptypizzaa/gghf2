@@ -38,6 +38,13 @@ MonoBehaviour:
   walkClip: {fileID: 0}
   idleClip: {fileID: 0}
   attackClip: {fileID: 0}
+  hideChildNode: Staff-Global
+  weaponPrefab: {fileID: 0}
+  usePlaceholderBow: 1
+  weaponSocketNode: Right_Hand-Global
+  weaponLocalPos: {x: 0, y: 0, z: 0}
+  weaponLocalEuler: {x: 0, y: 0, z: 0}
+  weaponScale: 28
   cost: 100
   summonCooldown: 5
   role: 2
