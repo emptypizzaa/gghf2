@@ -35,9 +35,16 @@ MonoBehaviour:
   visualPrefab: {fileID: -7981514964708312862, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
   visualHeight: 2.2
   modelYawOffset: 180
-  walkClip: {fileID: 0}
-  idleClip: {fileID: 0}
-  attackClip: {fileID: 0}
+  walkClip: {fileID: -3423286967834323061, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
+  idleClip: {fileID: -7347882153758487832, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
+  attackClip: {fileID: -6594115477587254448, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
+  hideChildNode: 
+  weaponPrefab: {fileID: 0}
+  usePlaceholderBow: 0
+  weaponSocketNode: 
+  weaponLocalPos: {x: 0, y: 0, z: 0}
+  weaponLocalEuler: {x: 0, y: 0, z: 0}
+  weaponScale: 1
   isBoss: 0
   killReward: 10
   expReward: 0

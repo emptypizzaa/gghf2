@@ -35,9 +35,9 @@ MonoBehaviour:
   visualPrefab: {fileID: -7981514964708312862, guid: d939353a77774494cb3e51a136b8829f, type: 3}
   visualHeight: 2.2
   modelYawOffset: 180
-  walkClip: {fileID: 0}
-  idleClip: {fileID: 0}
-  attackClip: {fileID: 0}
+  walkClip: {fileID: -3423286967834323061, guid: d939353a77774494cb3e51a136b8829f, type: 3}
+  idleClip: {fileID: -7347882153758487832, guid: d939353a77774494cb3e51a136b8829f, type: 3}
+  attackClip: {fileID: -6594115477587254448, guid: d939353a77774494cb3e51a136b8829f, type: 3}
   hideChildNode: Staff-Global
   weaponPrefab: {fileID: 0}
   usePlaceholderBow: 1

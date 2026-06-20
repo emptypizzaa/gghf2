@@ -35,9 +35,16 @@ MonoBehaviour:
   visualPrefab: {fileID: -7981514964708312862, guid: 50604756175d94a9092809b550510641, type: 3}
   visualHeight: 2.4
   modelYawOffset: 180
-  walkClip: {fileID: -3423286967834323061, guid: cd3f54463ce504be6af94c2392573762, type: 3}
-  idleClip: {fileID: -7347882153758487832, guid: cd3f54463ce504be6af94c2392573762, type: 3}
-  attackClip: {fileID: -6594115477587254448, guid: cd3f54463ce504be6af94c2392573762, type: 3}
+  walkClip: {fileID: -3423286967834323061, guid: 50604756175d94a9092809b550510641, type: 3}
+  idleClip: {fileID: -7347882153758487832, guid: 50604756175d94a9092809b550510641, type: 3}
+  attackClip: {fileID: -6594115477587254448, guid: 50604756175d94a9092809b550510641, type: 3}
+  hideChildNode: 
+  weaponPrefab: {fileID: 0}
+  usePlaceholderBow: 0
+  weaponSocketNode: 
+  weaponLocalPos: {x: 0, y: 0, z: 0}
+  weaponLocalEuler: {x: 0, y: 0, z: 0}
+  weaponScale: 1
   cost: 45
   summonCooldown: 2
   role: 1
