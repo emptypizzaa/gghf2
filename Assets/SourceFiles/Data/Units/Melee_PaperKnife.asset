@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ead94bc23f68049dca793b2207ef345e, type: 3}
   m_Name: Melee_PaperKnife
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitData
+  id: 
+  grade: 0
   displayName: "\uC885\uC774\uCE7C \uADFC\uC811\uB51C\uB7EC"
   prototypeColor: {r: 0.35, g: 0.85, b: 0.45, a: 1}
   maxHp: 80
@@ -19,6 +21,10 @@ MonoBehaviour:
   attackDamage: 22
   attackRange: 1.2
   attackInterval: 0.55
+  defense: 0
+  atkPerLevel: 0
+  hpPerLevel: 0
+  skillId: 
   isHealer: 0
   usesProjectile: 0
   projectileSpeed: 14
@@ -26,7 +32,7 @@ MonoBehaviour:
   projectileMaxLifetime: 3
   projectileArcHeight: 1.2
   projectileColor: {r: 1, g: 0.95, b: 0.4, a: 1}
-  visualPrefab: {fileID: -7981514964708312862, guid: cd3f54463ce504be6af94c2392573762, type: 3}
+  visualPrefab: {fileID: -7981514964708312862, guid: 50604756175d94a9092809b550510641, type: 3}
   visualHeight: 2.4
   modelYawOffset: 180
   walkClip: {fileID: -3423286967834323061, guid: cd3f54463ce504be6af94c2392573762, type: 3}
@@ -35,3 +41,4 @@ MonoBehaviour:
   cost: 45
   summonCooldown: 2
   role: 1
+  sellRefundRate: 0.5

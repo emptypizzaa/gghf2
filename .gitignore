@@ -104,3 +104,6 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Artist source (MagicaVoxel .vxa/.vxm/.png) — exported to glb for runtime; not imported by Unity (~ suffix), kept local only
+/[Aa]ssets/asset260620~/

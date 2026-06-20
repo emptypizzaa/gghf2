@@ -32,9 +32,9 @@ MonoBehaviour:
   projectileMaxLifetime: 3
   projectileArcHeight: 1.2
   projectileColor: {r: 1, g: 0.95, b: 0.4, a: 1}
-  visualPrefab: {fileID: 0}
+  visualPrefab: {fileID: -7981514964708312862, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
   visualHeight: 2.2
-  modelYawOffset: 0
+  modelYawOffset: 180
   walkClip: {fileID: 0}
   idleClip: {fileID: 0}
   attackClip: {fileID: 0}

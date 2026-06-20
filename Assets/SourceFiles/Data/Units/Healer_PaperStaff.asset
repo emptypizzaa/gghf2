@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ead94bc23f68049dca793b2207ef345e, type: 3}
   m_Name: Healer_PaperStaff
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitData
+  id: 
+  grade: 0
   displayName: "\uC885\uC774\uC9C0\uD321\uC774 \uD790\uB7EC"
   prototypeColor: {r: 1, g: 0.6, b: 0.2, a: 1}
   maxHp: 50
@@ -19,7 +21,24 @@ MonoBehaviour:
   attackDamage: 18
   attackRange: 3
   attackInterval: 1
+  defense: 0
+  atkPerLevel: 0
+  hpPerLevel: 0
+  skillId: 
   isHealer: 1
+  usesProjectile: 0
+  projectileSpeed: 14
+  projectileHitRadius: 0.35
+  projectileMaxLifetime: 3
+  projectileArcHeight: 1.2
+  projectileColor: {r: 1, g: 0.95, b: 0.4, a: 1}
+  visualPrefab: {fileID: -7981514964708312862, guid: 6f1aa635676b546f39db1213c8a1bb97, type: 3}
+  visualHeight: 2.2
+  modelYawOffset: 180
+  walkClip: {fileID: 0}
+  idleClip: {fileID: 0}
+  attackClip: {fileID: 0}
   cost: 70
   summonCooldown: 6
   role: 3
+  sellRefundRate: 0.5

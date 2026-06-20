@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ead94bc23f68049dca793b2207ef345e, type: 3}
   m_Name: Ranged_PaperBow
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitData
+  id: 
+  grade: 0
   displayName: "\uC885\uC774\uD65C \uC6D0\uAC70\uB9AC"
   prototypeColor: {r: 1, g: 0.85, b: 0.25, a: 1}
   maxHp: 40
@@ -19,6 +21,10 @@ MonoBehaviour:
   attackDamage: 28
   attackRange: 5
   attackInterval: 0.9
+  defense: 0
+  atkPerLevel: 0
+  hpPerLevel: 0
+  skillId: 
   isHealer: 0
   usesProjectile: 1
   projectileSpeed: 24
@@ -26,6 +32,13 @@ MonoBehaviour:
   projectileMaxLifetime: 3
   projectileArcHeight: 0
   projectileColor: {r: 1, g: 0.9, b: 0.35, a: 1}
+  visualPrefab: {fileID: -7981514964708312862, guid: d939353a77774494cb3e51a136b8829f, type: 3}
+  visualHeight: 2.2
+  modelYawOffset: 180
+  walkClip: {fileID: 0}
+  idleClip: {fileID: 0}
+  attackClip: {fileID: 0}
   cost: 100
   summonCooldown: 5
   role: 2
+  sellRefundRate: 0.5
