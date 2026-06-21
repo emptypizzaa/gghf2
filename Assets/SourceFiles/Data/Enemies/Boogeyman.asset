@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 784677b67267e47f9ba3b62cbee7458d, type: 3}
-  m_Name: Bushman
+  m_Name: Boogeyman
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.EnemyData
   id: 
   grade: 0
-  displayName: "\uBD80\uC2DC\uB9E8"
+  displayName: "\uBD80\uAE30\uB9E8"
   prototypeColor: {r: 0.65, g: 0.12, b: 0.18, a: 1}
   maxHp: 1000
   moveSpeed: 0.7
@@ -32,12 +32,13 @@ MonoBehaviour:
   projectileMaxLifetime: 3
   projectileArcHeight: 1.2
   projectileColor: {r: 1, g: 0.95, b: 0.4, a: 1}
-  visualPrefab: {fileID: 0}
-  visualHeight: 2.2
-  modelYawOffset: 0
-  walkClip: {fileID: 0}
-  idleClip: {fileID: 0}
-  attackClip: {fileID: 0}
+  visualPrefab: {fileID: -7981514964708312862, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
+  visualHeight: 3.2
+  modelYawOffset: 180
+  walkClip: {fileID: 4097805518192374645, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
+  idleClip: {fileID: -7347882153758487832, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
+  attackClip: {fileID: -6594115477587254448, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
+  deathClip: {fileID: 3234294941683401133, guid: 288f07824cc344f198981a79b0b1e492, type: 3}
   isBoss: 1
   killReward: 50
   expReward: 0

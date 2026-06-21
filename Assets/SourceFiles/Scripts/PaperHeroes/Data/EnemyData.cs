@@ -7,7 +7,7 @@ namespace PaperHeroes
     public class EnemyData : CombatantData
     {
         [Header("적 전용")]
-        [Tooltip("보스(부시맨 등) 여부. 연출/표기 구분용.")]
+        [Tooltip("보스(부기맨 등) 여부. 연출/표기 구분용.")]
         public bool isBoss = false;
 
         [Tooltip("처치 시 지급하는 꿈에너지(킬 보상). 경제 획득 2종 중 '몬스터 처치 보상'. (M3에서 경제에 연결)")]
