@@ -41,7 +41,7 @@ namespace PaperHeroes
         [Tooltip("공격 간격(초)")]
         public float attackInterval = 1f;
 
-        [Tooltip("방어력. 피격 시 감산 경감 max(1, 데미지-방어력). 0=경감 없음. (M2에서 TakeDamage에 적용)")]
+        [Tooltip("방어력. 피격 시 감산 경감 max(1, 데미지-방어력). 0=경감 없음(원본 데미지). Combatant.TakeDamage에서 적용.")]
         public float defense = 0f;
 
         [Header("테이블 메타(프로토 스텁 — 성장/스킬 보류)")]

@@ -330,7 +330,9 @@ namespace PaperHeroes
         public void TakeDamage(float amount)
         {
             if (amount <= 0f || IsDead) return;
-            _hp -= amount;
+            // 방어력 경감: max(1, 데미지-방어력). defense=0이면 무경감(원본 데미지 그대로). (CombatantData.defense 계약)
+            float dealt = (data != null && data.defense > 0f) ? Mathf.Max(1f, amount - data.defense) : amount;
+            _hp -= dealt;
             if (_hp <= 0f)
             {
                 GrantKillReward();
