@@ -55,6 +55,11 @@ namespace PaperHeroes
             // 전투 HUD(거점 HP·나가기) 부착 — 런타임 UI라 씬 편집 없이 코드로 생성.
             // 거점 해소·구독 이후에 부착해 HUD가 거점을 안전히 읽도록 한다(재시작 시 Start 재실행 → 재부착).
             if (GetComponent<CombatHUD>() == null) gameObject.AddComponent<CombatHUD>();
+
+            // BGM(매 매치) + 인트로 스토리(앱 실행당 1회) 부착 — 둘 다 런타임 오버레이라 씬 편집 없음.
+            // ★BGM을 먼저 부착해 AudioListener 보장 + BgmController.Instance가 IntroController.Start 전에 준비되게 한다.
+            if (GetComponent<BgmController>() == null) gameObject.AddComponent<BgmController>();
+            if (GetComponent<IntroController>() == null) gameObject.AddComponent<IntroController>();
         }
 
         void ResolveBasesIfNeeded()

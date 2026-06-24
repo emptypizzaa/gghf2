@@ -832,7 +832,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.5, z: 0}
-  m_LocalScale: {x: 24, y: 1, z: 4}
+  m_LocalScale: {x: 24, y: 1, z: 19}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -889,6 +889,10 @@ MonoBehaviour:
   lane: {fileID: 0}
   allyBase: {fileID: 0}
   enemyBase: {fileID: 0}
+  stage: {fileID: 0}
+  economy: {fileID: 0}
+  waveSpawner: {fileID: 0}
+  summon: {fileID: 0}
 --- !u!114 &2104235709
 MonoBehaviour:
   m_ObjectHideFlags: 0
