@@ -8,7 +8,7 @@ namespace PaperHeroes
 {
     /// <summary>
     /// 앱 실행당 1회 인트로 스토리 시퀀스(씬 편집 없는 런타임 오버레이, CombatHUD의 UI 빌드 패턴을 따름).
-    /// 흐름: 커버(키아트B, 탭 시작) → 프롤로그 슬라이드쇼(교실 7장 + 내레이션) → 시네마틱(영상 3개) → 타이틀(키아트A + 시작).
+    /// 흐름: 커버(키아트B, 탭 시작) → 프롤로그 슬라이드쇼(교실 7장 + 내레이션) → 시네마틱(영상 2개) → 타이틀(키아트A + 시작).
     /// ★Time.timeScale=0으로 전투를 게이트(검증됨: Economy/SummonController/WaveSpawner 전부 정지). "시작" 클릭 시 1로 복구.
     /// ★재시작(씬 리로드)에선 static 플래그로 인트로를 스킵 → 전투만 즉시 재개(BGM은 BgmController가 매 매치 별도 유지).
     /// 코루틴은 게이트 중(timeScale=0) 진행해야 하므로 Time.unscaledDeltaTime 기반으로 대기한다.
@@ -23,7 +23,7 @@ namespace PaperHeroes
         const string PrologueFmt = "Story/prologue_{0:00}";
         const int    PrologueMax = 12;                  // 있는 만큼만(없으면 중단)
         const string CineFmt     = "Story/cine{0}";
-        const int    CineCount   = 3;
+        const int    CineCount   = 2;
         const float  SlideHold   = 2.6f;
         const float  FadeDur     = 0.5f;
 
