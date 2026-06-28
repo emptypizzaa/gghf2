@@ -1,0 +1,5 @@
+{
+  "language": "korean",
+  "model": "fable",
+  "fallbackModel": ["opus"]
+}

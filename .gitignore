@@ -107,3 +107,6 @@ InitTestScene*.unity*
 
 # Artist source (MagicaVoxel .vxa/.vxm/.png) — exported to glb for runtime; not imported by Unity (~ suffix), kept local only
 /[Aa]ssets/asset260620~/
+
+# Claude Code — machine-local overrides (model 등은 .claude/settings.json에 프로젝트 기본값)
+.claude/settings.local.json
