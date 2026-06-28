@@ -129,11 +129,14 @@ namespace PaperHeroes
         {
             if (_finished) return;
             _finished = true;
-            Time.timeScale = 1f;                              // 전투 개시
             if (_narration != null) _narration.Stop();
             if (_bgm != null) _bgm.SetDuck(1f);
             if (_canvas != null) Destroy(_canvas.gameObject);
             Destroy(this);
+
+            // 로비가 있으면 전투 게이트를 로비가 이어받으므로 여기서 복구하지 않는다(인트로 종료 → 아래 로비 노출).
+            // 로비가 없을 때만(로비 비활성 구성) 기존대로 곧장 전투를 개시한다.
+            if (FindFirstObjectByType<LobbyController>() == null) Time.timeScale = 1f;
         }
 
         // ---------- 미디어/연출 ----------

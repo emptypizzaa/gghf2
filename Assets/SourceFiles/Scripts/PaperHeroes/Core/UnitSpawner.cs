@@ -94,18 +94,28 @@ namespace PaperHeroes
             var combatant = go.AddComponent<Combatant>();
             combatant.Init(data, faction, lane);
 
+            // 무장(로드아웃): 아군 플레이어 유닛만 저장된 무기 프리셋 스탯 보정 적용(적=EnemyData → ud==null로 제외).
+            Loadout loadout = default;
+            bool hasLoadout = faction == Faction.Ally && ud != null;
+            if (hasLoadout)
+            {
+                loadout = LoadoutStore.Resolve(data);
+                combatant.ApplyLoadout(loadout.weapon.ToMods());
+            }
+
             // 모델 비주얼(선택): 프리미티브 메쉬를 숨기고 3D 모델을 자식으로 부착(자동 스케일 + 애니메이션).
+            GameObject model = null; // 분장 틴트 대상이라 메서드 스코프로 호이스팅(없으면 프리미티브 go에 틴트).
             if (data.visualPrefab != null)
             {
                 if (renderer != null) renderer.enabled = false;
-                var model = Instantiate(data.visualPrefab, go.transform);
+                model = Instantiate(data.visualPrefab, go.transform);
                 model.transform.localPosition = Vector3.zero;
                 // 행군 방향(아군=적진 +X / 적=아군 -X)을 바라보게. modelYawOffset로 모델 기본 정면 보정.
                 var march = new Vector3(lane.ForwardDir(faction), 0f, 0f);
                 model.transform.rotation = Quaternion.LookRotation(march, Vector3.up) * Quaternion.Euler(0f, data.modelYawOffset, 0f);
-                FitModel(go.transform, model, data.visualHeight);
-                SharpenTextures(model); // 복셀/픽셀아트 텍스처를 Point 필터로(보간 뭉개짐 방지)
-                ApplyWeaponSocket(model, data); // 무기 노드 숨김(예: 지팡이) + 손 소켓에 prop(활) 부착(선택)
+                UnitVisuals.FitModel(go.transform, model, data.visualHeight);
+                UnitVisuals.SharpenTextures(model); // 복셀/픽셀아트 텍스처를 Point 필터로(보간 뭉개짐 방지)
+                UnitVisuals.ApplyWeaponSocket(model, data); // 무기 노드 숨김(예: 지팡이) + 손 소켓에 prop(활) 부착(선택)
 
                 if (data.walkClip != null || data.idleClip != null || data.attackClip != null || data.deathClip != null)
                 {
@@ -118,97 +128,11 @@ namespace PaperHeroes
                 }
             }
 
+            // 분장(로드아웃): 아군만 코스메틱 틴트를 per-instance(MPB)로 적용. 모델 있으면 모델, 없으면 프리미티브에.
+            if (hasLoadout)
+                LoadoutVisuals.ApplyTint(model != null ? model : go, loadout.cosmetic);
+
             return combatant;
-        }
-
-        /// <summary>
-        /// 모델 텍스처를 Point 필터로 설정 — 복셀/픽셀아트(작은 텍스처)가 Bilinear 보간으로
-        /// 뭉개지지 않고 또렷하게 보이도록(눈·나무 방패 등). aniso도 끔.
-        /// </summary>
-        private void SharpenTextures(GameObject model)
-        {
-            var ids = new System.Collections.Generic.List<int>();
-            var renderers = model.GetComponentsInChildren<Renderer>(true);
-            for (int r = 0; r < renderers.Length; r++)
-            {
-                var mats = renderers[r].sharedMaterials;
-                for (int m = 0; m < mats.Length; m++)
-                {
-                    var mat = mats[m];
-                    if (mat == null) continue;
-                    ids.Clear();
-                    mat.GetTexturePropertyNameIDs(ids);
-                    for (int i = 0; i < ids.Count; i++)
-                    {
-                        var tex = mat.GetTexture(ids[i]) as Texture2D;
-                        if (tex != null)
-                        {
-                            tex.filterMode = FilterMode.Point;
-                            tex.anisoLevel = 0;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>모델을 목표 높이로 스케일하고 바닥을 유닛 발(지면)에 맞춘다.</summary>
-        private void FitModel(Transform root, GameObject model, float targetHeight)
-        {
-            var rends = model.GetComponentsInChildren<Renderer>();
-            if (rends.Length == 0) return;
-
-            Bounds b = rends[0].bounds;
-            for (int i = 1; i < rends.Length; i++) b.Encapsulate(rends[i].bounds);
-            float h = b.size.y;
-            if (h < 1e-4f) return;
-
-            float parentY = Mathf.Max(1e-4f, root.lossyScale.y);
-            model.transform.localScale = Vector3.one * (targetHeight / h / parentY);
-
-            // 스케일 후 바운즈 재측정 → 모델 바닥을 유닛 발(지면)에 정렬.
-            Bounds b2 = rends[0].bounds;
-            for (int i = 1; i < rends.Length; i++) b2.Encapsulate(rends[i].bounds);
-            float footY = root.position.y - root.lossyScale.y;
-            model.transform.position += new Vector3(0f, footY - b2.min.y, 0f);
-        }
-
-        /// <summary>
-        /// 무기 소켓(선택): 모델의 특정 노드(예: 지팡이)를 숨기고, 손 노드에 무기 prop(활)을 부착한다.
-        /// 전부 데이터 조건부 — 미설정 유닛은 no-op. art-agnostic: weaponPrefab(활 glb) 또는 절차적 플레이스홀더.
-        /// </summary>
-        private void ApplyWeaponSocket(GameObject model, CombatantData data)
-        {
-            // 1) 숨길 노드(예: 지팡이 'Staff-Global')의 하위 Renderer 비활성.
-            if (!string.IsNullOrEmpty(data.hideChildNode))
-            {
-                var hide = FindDeep(model, data.hideChildNode);
-                if (hide != null)
-                {
-                    var rs = hide.GetComponentsInChildren<Renderer>(true);
-                    for (int i = 0; i < rs.Length; i++) rs[i].enabled = false;
-                }
-            }
-
-            // 2) 무기 prop 부착: weaponPrefab 우선, 없으면 절차적 플레이스홀더 활.
-            GameObject prop = null;
-            if (data.weaponPrefab != null) prop = Instantiate(data.weaponPrefab);
-            else if (data.usePlaceholderBow) prop = BowProp.Create();
-            if (prop == null) return;
-
-            Transform socket = FindDeep(model, data.weaponSocketNode);
-            prop.transform.SetParent(socket != null ? socket : model.transform, false);
-            prop.transform.localPosition = data.weaponLocalPos;
-            prop.transform.localRotation = Quaternion.Euler(data.weaponLocalEuler);
-            prop.transform.localScale = Vector3.one * data.weaponScale;
-        }
-
-        /// <summary>모델 하위에서 이름으로 노드를 찾는다(비활성 포함). 빈 이름이면 null.</summary>
-        private static Transform FindDeep(GameObject root, string name)
-        {
-            if (string.IsNullOrEmpty(name)) return null;
-            var all = root.GetComponentsInChildren<Transform>(true);
-            for (int i = 0; i < all.Length; i++) if (all[i].name == name) return all[i];
-            return null;
         }
     }
 }

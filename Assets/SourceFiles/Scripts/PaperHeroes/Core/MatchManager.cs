@@ -60,6 +60,10 @@ namespace PaperHeroes
             // ★BGM을 먼저 부착해 AudioListener 보장 + BgmController.Instance가 IntroController.Start 전에 준비되게 한다.
             if (GetComponent<BgmController>() == null) gameObject.AddComponent<BgmController>();
             if (GetComponent<IntroController>() == null) gameObject.AddComponent<IntroController>();
+
+            // 로비(교실 허브) — 인트로 다음/전투 시작 전 게이트. 매 매치(씬 로드)마다 부착되어
+            // "전투 시작" 전까지 전투를 정지(timeScale=0)하고, 결과 패널의 "로비로"가 씬을 리로드하면 다시 나타난다.
+            if (GetComponent<LobbyController>() == null) gameObject.AddComponent<LobbyController>();
         }
 
         void ResolveBasesIfNeeded()

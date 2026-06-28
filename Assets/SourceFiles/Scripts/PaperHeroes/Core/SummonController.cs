@@ -29,6 +29,7 @@ namespace PaperHeroes
 
         private int _maxUnits;
         private float[] _cooldownRemaining;
+        private bool[] _promotable; // RefreshUI가 프레임당 1회 스캔으로 채우는 로스터별 승급 가능 여부(버튼마다 재스캔 방지).
         private TextMeshProUGUI _moneyText;
         private TextMeshProUGUI _unitCountText;
         private Button[] _buttons;
@@ -48,6 +49,7 @@ namespace PaperHeroes
         {
             _maxUnits = Mathf.Max(1, initialMaxUnits);
             _cooldownRemaining = new float[roster != null ? roster.Length : 0];
+            _promotable = new bool[roster != null ? roster.Length : 0];
             BuildUI();
             RefreshUI();
         }
@@ -78,14 +80,17 @@ namespace PaperHeroes
 
         public int MaxUnits => _maxUnits;
 
-        public bool CanSummon(int index)
+        public bool CanSummon(int index) => CanSummon(index, AllyUnitCount);
+
+        /// <summary>CanSummon 본체. allyCount를 캐시로 받아 버튼마다 AllyUnitCount를 재스캔하지 않게 한다(RefreshUI는 프레임당 1회 스캔 결과를 넘긴다).</summary>
+        private bool CanSummon(int index, int allyCount)
         {
             if (roster == null || index < 0 || index >= roster.Length) return false;
             UnitData d = roster[index];
             if (d == null || _cooldownRemaining[index] > 0f) return false;
             if (economy == null || !economy.CanAfford(d.cost)) return false;
             // 소환은 항상 새 유닛 추가 → 배치 캡 적용(승급은 별도 강화 버튼 TryUpgrade로 분리).
-            if (AllyUnitCount >= _maxUnits) return false;
+            if (allyCount >= _maxUnits) return false;
             return true;
         }
 
@@ -135,10 +140,17 @@ namespace PaperHeroes
         public bool CanUpgrade(int index)
         {
             if (roster == null || index < 0 || index >= roster.Length) return false;
+            return CanUpgrade(index, FindPromotable(roster[index]) != null);
+        }
+
+        /// <summary>CanUpgrade 본체. promotableExists를 캐시로 받아 버튼마다 FindPromotable을 재스캔하지 않게 한다.</summary>
+        private bool CanUpgrade(int index, bool promotableExists)
+        {
+            if (roster == null || index < 0 || index >= roster.Length) return false;
             UnitData d = roster[index];
             if (d == null) return false;
             if (economy == null || !economy.CanAfford(UpgradeCost(d))) return false;
-            return FindPromotable(d) != null;
+            return promotableExists;
         }
 
         /// <summary>강화: 같은 유닛 중 가장 낮은 티어 아군을 1단계 승급(비용 차감). 새 유닛은 안 생긴다. (설계 12번 머지 — 트리거를 소환에서 분리)</summary>
@@ -221,11 +233,14 @@ namespace PaperHeroes
 
         private void RefreshUI()
         {
+            // 프레임당 1회 스캔으로 아군 수 + 로스터별 승급 가능 여부 산출(아래 버튼들이 재스캔 없이 이 결과만 사용).
+            int allyCount = ScanAllyState(_promotable);
+
             if (_moneyText != null && economy != null)
                 _moneyText.text = "돈  " + Mathf.FloorToInt(economy.CurrentMoney);
 
             if (_unitCountText != null)
-                _unitCountText.text = "용병  " + AllyUnitCount + " / " + _maxUnits;
+                _unitCountText.text = "용병  " + allyCount + " / " + _maxUnits;
 
             if (_slotButton != null)
             {
@@ -237,7 +252,7 @@ namespace PaperHeroes
             for (int i = 0; i < _buttons.Length; i++)
             {
                 UnitData d = roster[i];
-                _buttons[i].interactable = CanSummon(i);
+                _buttons[i].interactable = CanSummon(i, allyCount);
                 string cd = _cooldownRemaining[i] > 0f
                     ? "\n쿨 " + _cooldownRemaining[i].ToString("F1") + "s"
                     : "";
@@ -245,10 +260,35 @@ namespace PaperHeroes
 
                 if (_upgradeButtons != null && _upgradeButtons[i] != null)
                 {
-                    _upgradeButtons[i].interactable = CanUpgrade(i);
+                    _upgradeButtons[i].interactable = CanUpgrade(i, _promotable[i]);
                     _upgradeLabels[i].text = "강화\n$" + (int)UpgradeCost(d);
                 }
             }
+        }
+
+        /// <summary>
+        /// 살아있는 아군(this.faction) 용병을 1회 스캔해 (1) 총 수를 반환하고 (2) 로스터 각 항목에 대해
+        /// 승급 가능(Tier&lt;3) 유닛 존재 여부를 promotable[]에 채운다. 기존엔 RefreshUI가 버튼마다
+        /// AllyUnitCount·FindPromotable을 따로 호출해 프레임당 다회 스캔하던 것을 한 번으로 합친다.
+        /// </summary>
+        private int ScanAllyState(bool[] promotable)
+        {
+            if (promotable != null)
+                for (int i = 0; i < promotable.Length; i++) promotable[i] = false;
+
+            int count = 0;
+            var all = Targetables.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var c = all[i] as Combatant;
+                if (c == null || c.faction != faction || c.IsDead) continue;
+                count++;
+
+                if (promotable == null || roster == null || c.Tier >= 3 || c.data == null) continue;
+                for (int r = 0; r < roster.Length; r++)
+                    if (roster[r] == c.data) { promotable[r] = true; break; }
+            }
+            return count;
         }
 
         private TextMeshProUGUI CreateText(Transform parent, string name, float fontSize)

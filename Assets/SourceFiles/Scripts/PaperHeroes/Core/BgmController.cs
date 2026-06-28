@@ -14,6 +14,10 @@ namespace PaperHeroes
 
         AudioSource _src;
         float _baseVolume = 0.55f;
+        bool _muted;
+
+        /// <summary>현재 음소거 상태(로비 BGM 토글 등 UI 표시용).</summary>
+        public bool IsMuted => _muted;
 
         void Awake()
         {
@@ -45,7 +49,15 @@ namespace PaperHeroes
         public void SetVolume(float v)
         {
             _baseVolume = Mathf.Clamp01(v);
-            if (_src != null) _src.volume = _baseVolume;
+            if (_src != null && !_muted) _src.volume = _baseVolume;
+        }
+
+        /// <summary>BGM 음소거 토글(로비 버튼용). 새 음소거 상태를 반환한다.</summary>
+        public bool ToggleMute()
+        {
+            _muted = !_muted;
+            if (_src != null) _src.volume = _muted ? 0f : _baseVolume;
+            return _muted;
         }
 
         /// <summary>씬에 AudioListener가 없으면 카메라(없으면 전용 GO)에 하나 보장한다. 멱등.</summary>

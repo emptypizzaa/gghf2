@@ -17,7 +17,7 @@ public static class AndroidBuilder
         // 1) Android 툴 경로 (이 머신의 검증된 위치)
         AndroidExternalToolsSettings.sdkRootPath = "/Users/choimarc/Library/Android/sdk";
         AndroidExternalToolsSettings.ndkRootPath = "/Users/choimarc/Library/Android/sdk/ndk/27.2.12479018";
-        AndroidExternalToolsSettings.jdkRootPath = "/Applications/Unity/Hub/Editor/6000.4.11f1/PlaybackEngines/AndroidPlayer/OpenJDK";
+        AndroidExternalToolsSettings.jdkRootPath = "/Applications/Unity/Hub/Editor/6000.5.1f1/PlaybackEngines/AndroidPlayer/OpenJDK";
 
         // 2) 플레이어 설정 (출시용 64비트)
         PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.gghf.paperheroes");

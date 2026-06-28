@@ -7,8 +7,9 @@ using TMPro;
 namespace PaperHeroes
 {
     /// <summary>
-    /// 매치 종료 시 VICTORY/DEFEAT 결과 패널과 RESTART 버튼을 띄운다(런타임 UI 오버레이).
-    /// RESTART는 timeScale 복구 후 현재 씬을 리로드해 상태를 깨끗이 초기화한다.
+    /// 매치 종료 시 VICTORY/DEFEAT 결과 패널과 "로비로" 버튼을 띄운다(런타임 UI 오버레이).
+    /// "로비로"는 timeScale 복구 후 현재 씬을 리로드해 상태를 깨끗이 초기화한다 — 리로드 후
+    /// LobbyController가 다시 전투를 게이트하므로 결과적으로 로비 화면으로 돌아간다(인트로는 세션 1회라 스킵).
     /// (씬은 Build Settings에 등록되어 있어야 LoadScene 가능.)
     /// </summary>
     public class MatchResultUI : MonoBehaviour
@@ -79,7 +80,7 @@ namespace PaperHeroes
             var btn = btnGo.AddComponent<Button>();
             btn.targetGraphic = img;
             btn.onClick.AddListener(Restart);
-            var label = CreateText(btnGo.transform, "다시 시작", 46f);
+            var label = CreateText(btnGo.transform, "로비로", 46f);
             var lrt = label.rectTransform;
             lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
             lrt.offsetMin = lrt.offsetMax = Vector2.zero;

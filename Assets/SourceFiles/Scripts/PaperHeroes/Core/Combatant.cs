@@ -47,8 +47,15 @@ namespace PaperHeroes
         // 승급(머지) 티어(1~3). 동일 유닛 중복 소환 시 1단계씩 상승. 스탯은 read-time 배수로 적용(공유 SO 불변). (설계 12번)
         public int Tier { get; private set; } = 1;
         private float TierMul => Tier >= 3 ? 2f : (Tier == 2 ? 1.5f : 1f);
-        public float MaxHp => (data != null ? data.maxHp : 0f) * TierMul;
-        public float AttackDamage => (data != null ? data.attackDamage : 0f) * TierMul;
+        public float MaxHp => (data != null ? data.maxHp : 0f) * TierMul * Mods.hpMul;
+        public float AttackDamage => (data != null ? data.attackDamage : 0f) * TierMul * Mods.damageMul;
+
+        // 무장(로드아웃) 스탯 보정 — 스폰 직후 ApplyLoadout으로 주입. 기본 Identity(보정 없음)라 적/미설정 유닛은 무변화.
+        public StatMods Mods { get; private set; } = StatMods.Identity;
+        public float AttackRange    => (data != null ? data.attackRange    : 0f) * Mods.rangeMul;
+        public float AttackInterval => (data != null ? data.attackInterval : 0f) * Mods.intervalMul;
+        public float MoveSpeed      => (data != null ? data.moveSpeed      : 0f) * Mods.moveMul;
+        public float Defense        => (data != null ? data.defense        : 0f) + Mods.defenseBonus;
         private Vector3 _baseScale = Vector3.one;
 
         /// <summary>외형 애니메이션용 행동 상태(이동/교전/정지).</summary>
@@ -71,6 +78,13 @@ namespace PaperHeroes
             _baseScale = transform.localScale;
             if (data != null) _hp = MaxHp;
             SpawnSeq = _spawnCounter++;
+        }
+
+        /// <summary>무장(로드아웃) 스탯 보정 주입 — 스폰 직후 1회 호출. hpMul 반영 위해 시작 HP를 새 MaxHp로 다시 시드한다(이미 피해 입은 유닛엔 호출 금지).</summary>
+        public void ApplyLoadout(in StatMods m)
+        {
+            Mods = m;
+            if (data != null) _hp = MaxHp;
         }
 
         private void OnEnable() => Targetables.Register(this);
@@ -97,7 +111,7 @@ namespace PaperHeroes
                 {
                     Motion = ActState.Attacking;
                     _attackTimer += Time.deltaTime;
-                    if (_attackTimer >= data.attackInterval)
+                    if (_attackTimer >= AttackInterval)
                     {
                         _attackTimer = 0f;
                         float before = patient.CurrentHp;
@@ -120,7 +134,7 @@ namespace PaperHeroes
                 {
                     Motion = ActState.Attacking;
                     _attackTimer += Time.deltaTime;
-                    if (_attackTimer >= data.attackInterval)
+                    if (_attackTimer >= AttackInterval)
                     {
                         _attackTimer = 0f;
                         if (data.usesProjectile)
@@ -143,12 +157,12 @@ namespace PaperHeroes
                 // 힐러: 적진 직진 대신 가장 앞선 아군 전투원 뒤 standoff 슬롯으로 호밍(돌진 금지).
                 // 선두 사망으로 슬롯이 뒤로 점프하면 후퇴 허용(안전 리포지션). 앞에 전투원이 없으면 단독 전진 금지(대기).
                 newX = TryHealerStandoffX(dir, out float standoffX)
-                    ? Mathf.MoveTowards(curX, standoffX, data.moveSpeed * Time.deltaTime)
+                    ? Mathf.MoveTowards(curX, standoffX, MoveSpeed * Time.deltaTime)
                     : curX;
             }
             else
             {
-                newX = curX + dir * data.moveSpeed * Time.deltaTime;
+                newX = curX + dir * MoveSpeed * Time.deltaTime;
                 if (faction == Faction.Enemy)
                 {
                     if (TryLeaderCapX(dir, out float capX) && newX * dir > capX * dir)
@@ -168,15 +182,7 @@ namespace PaperHeroes
         private bool TryLeaderCapX(float dir, out float capX)
         {
             capX = 0f;
-            Combatant leader = null;
-            var all = Targetables.All;
-            for (int i = 0; i < all.Count; i++)
-            {
-                var c = all[i] as Combatant;
-                if (c == null || c == this || c.IsDead || c.faction != faction) continue;
-                if (c.SpawnSeq >= SpawnSeq) continue;                          // 나보다 먼저 스폰된(앞) 유닛만
-                if (leader == null || c.SpawnSeq > leader.SpawnSeq) leader = c; // 바로 앞(SpawnSeq 최대)
-            }
+            Combatant leader = CombatField.Leader(this); // 같은 진영·나보다 먼저 스폰된 생존 유닛 중 바로 앞(O(log n))
             if (leader == null) return false;
             float spacing = HalfWidth(this) + HalfWidth(leader); // footprint(겹침 없음)
             capX = leader.transform.position.x - dir * spacing;
@@ -194,18 +200,9 @@ namespace PaperHeroes
         private bool TryHealerStandoffX(float dir, out float standoffX)
         {
             standoffX = 0f;
-            Combatant front = null;
-            var all = Targetables.All;
-            for (int i = 0; i < all.Count; i++)
-            {
-                var c = all[i] as Combatant;
-                if (c == null || c == this || c.IsDead || c.faction != faction) continue;
-                if (c.data != null && c.data.isHealer) continue;                          // 다른 힐러는 전선 기준 제외
-                if (front == null || c.transform.position.x * dir > front.transform.position.x * dir)
-                    front = c;                                                             // 가장 전진(forward 방향 X 최대)
-            }
-            if (front == null) return false;
-            standoffX = front.transform.position.x - dir * (data.attackRange * HealerStandoffFrac);
+            Combatant front = CombatField.FrontNonHealer(faction); // 같은 진영 비힐러 중 가장 전진한 전투원(프레임당 1회 산출)
+            if (front == null || front.IsDead) return false;
+            standoffX = front.transform.position.x - dir * (AttackRange * HealerStandoffFrac);
             return true;
         }
 
@@ -243,10 +240,10 @@ namespace PaperHeroes
             float myX = transform.position.x;
             float myZ = transform.position.z;
             float push = 0f;
-            var all = Targetables.All;
-            for (int i = 0; i < all.Count; i++)
+            CombatField.NeighborsInX(myX - overlapR, myX + overlapR, out int lo, out int hi); // overlapR 창 안 후보만
+            for (int i = lo; i < hi; i++)
             {
-                var c = all[i] as Combatant;
+                var c = CombatField.At(i) as Combatant;
                 if (c == null || c == this || c.IsDead || c.faction != faction) continue;
                 float dx = c.transform.position.x - myX;
                 if (Mathf.Abs(dx) > overlapR) continue;                 // X로 충분히 떨어졌으면 겹침 아님(sqrt 전 조기 컷)
@@ -272,14 +269,14 @@ namespace PaperHeroes
             IDamageable best = null;
             float bestDist = float.MaxValue;
 
-            var all = Targetables.All;
-            for (int i = 0; i < all.Count; i++)
+            CombatField.NeighborsInX(myX - AttackRange, myX + AttackRange, out int lo, out int hi);
+            for (int i = lo; i < hi; i++)
             {
-                IDamageable t = all[i];
+                IDamageable t = CombatField.At(i);
                 if (t == null || t.IsDead || t.Faction == faction) continue;
 
                 float d = Mathf.Abs(t.PositionX - myX);
-                if (d <= data.attackRange && d < bestDist)
+                if (d <= AttackRange && d < bestDist)
                 {
                     bestDist = d;
                     best = t;
@@ -295,10 +292,10 @@ namespace PaperHeroes
             Combatant best = null;
             float bestRatio = 1f;
 
-            var all = Targetables.All;
-            for (int i = 0; i < all.Count; i++)
+            CombatField.NeighborsInX(myX - AttackRange, myX + AttackRange, out int lo, out int hi);
+            for (int i = lo; i < hi; i++)
             {
-                var other = all[i] as Combatant;
+                var other = CombatField.At(i) as Combatant;
                 if (other == null || other == this || other.IsDead) continue;
                 if (other.faction != faction || other.data == null || other.MaxHp <= 0f) continue;
 
@@ -306,7 +303,7 @@ namespace PaperHeroes
                 if (ratio >= 1f) continue; // 가득 찬 아군은 제외
 
                 float d = Mathf.Abs(other.transform.position.x - myX);
-                if (d <= data.attackRange && ratio < bestRatio)
+                if (d <= AttackRange && ratio < bestRatio)
                 {
                     bestRatio = ratio;
                     best = other;
@@ -331,7 +328,7 @@ namespace PaperHeroes
         {
             if (amount <= 0f || IsDead) return;
             // 방어력 경감: max(1, 데미지-방어력). defense=0이면 무경감(원본 데미지 그대로). (CombatantData.defense 계약)
-            float dealt = (data != null && data.defense > 0f) ? Mathf.Max(1f, amount - data.defense) : amount;
+            float dealt = Defense > 0f ? Mathf.Max(1f, amount - Defense) : amount;
             _hp -= dealt;
             if (_hp <= 0f)
             {
