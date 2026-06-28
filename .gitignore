@@ -110,3 +110,6 @@ InitTestScene*.unity*
 
 # Claude Code — machine-local overrides (model 등은 .claude/settings.json에 프로젝트 기본값)
 .claude/settings.local.json
+
+# Local archives/backups (임시 Assets 백업 zip 등) — 리포에 넣지 않음(대용량)
+*.zip
