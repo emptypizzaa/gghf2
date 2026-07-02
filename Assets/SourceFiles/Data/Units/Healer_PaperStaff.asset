@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PaperHeroes.UnitData
   id: 
   grade: 0
-  displayName: "\uC885\uC774\uC9C0\uD321\uC774 \uD790\uB7EC"
+  displayName: "\uAC13\uD30C \uD790\uB7EC"
   prototypeColor: {r: 1, g: 0.6, b: 0.2, a: 1}
   maxHp: 50
   moveSpeed: 2.5
@@ -32,13 +32,13 @@ MonoBehaviour:
   projectileMaxLifetime: 3
   projectileArcHeight: 1.2
   projectileColor: {r: 1, g: 0.95, b: 0.4, a: 1}
-  visualPrefab: {fileID: -7981514964708312862, guid: 6f1aa635676b546f39db1213c8a1bb97, type: 3}
+  visualPrefab: {fileID: -7981514964708312862, guid: 5436d2d7ab7f44d5b059a39b175cfe4e, type: 3}
   visualHeight: 2.2
   modelYawOffset: 180
-  walkClip: {fileID: -3423286967834323061, guid: 6f1aa635676b546f39db1213c8a1bb97, type: 3}
-  idleClip: {fileID: -7347882153758487832, guid: 6f1aa635676b546f39db1213c8a1bb97, type: 3}
-  attackClip: {fileID: -6594115477587254448, guid: 6f1aa635676b546f39db1213c8a1bb97, type: 3}
-  deathClip: {fileID: 3234294941683401133, guid: 6f1aa635676b546f39db1213c8a1bb97, type: 3}
+  walkClip: {fileID: -3423286967834323061, guid: 5436d2d7ab7f44d5b059a39b175cfe4e, type: 3}
+  idleClip: {fileID: -5216561280987519906, guid: 5436d2d7ab7f44d5b059a39b175cfe4e, type: 3}
+  attackClip: {fileID: -6594115477587254448, guid: 5436d2d7ab7f44d5b059a39b175cfe4e, type: 3}
+  deathClip: {fileID: 3234294941683401133, guid: 5436d2d7ab7f44d5b059a39b175cfe4e, type: 3}
   hideChildNode: 
   weaponPrefab: {fileID: 0}
   usePlaceholderBow: 0
